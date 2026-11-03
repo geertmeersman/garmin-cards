@@ -4,7 +4,7 @@
 [![maintainer](https://img.shields.io/badge/maintainer-Geert%20Meersman-green?style=for-the-badge&logo=github)](https://github.com/geertmeersman)
 [![buyme_coffee](https://img.shields.io/badge/Buy%20me%20an%20Omer-donate-yellow?style=for-the-badge&logo=buymeacoffee)](https://www.buymeacoffee.com/geertmeersman)
 
-A collection of Lovelace cards for [Home Assistant](https://www.home-assistant.io/) that display data from the [Garmin Connect integration](https://github.com/geertmeersman/garmin_connect).
+A collection of Lovelace cards for [Home Assistant](https://www.home-assistant.io/) that display data from the [Garmin Connect integration](https://github.com/cyberjunky/home-assistant-garmin_connect).
 
 ## Cards
 
@@ -19,7 +19,7 @@ A collection of Lovelace cards for [Home Assistant](https://www.home-assistant.i
 
 ## Requirements
 
-- [Garmin Connect integration](https://github.com/geertmeersman/garmin_connect) installed
+- [Garmin Connect integration](https://github.com/cyberjunky/home-assistant-garmin_connect) installed
 
 ## Installation via HACS
 
