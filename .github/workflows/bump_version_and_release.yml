@@ -1,0 +1,64 @@
+name: Release - Bump and Release 🚀
+on: [workflow_dispatch]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Create and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⤵️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: 🗑 Delete drafts
+        uses: hugo19941994/delete-draft-releases@v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📝 Publish release
+        uses: release-drafter/release-drafter@v7
+        id: release_published
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          publish: true
+
+      - name: 🔄 Update version in VERSION file and package.json
+        run: |
+          TAG=${{ steps.release_published.outputs.tag_name }}
+          echo $TAG > VERSION
+          sed -i "s/\"version\": \".*\"/\"version\": \"${TAG#v}\"/" package.json
+          echo "Updated to version: ${TAG#v}"
+
+      - name: 📦 Upload release assets
+        run: |
+          gh release upload ${{ steps.release_published.outputs.tag_name }} garmin-cards.js --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ✅ Commit version bump
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "VERSION garmin-cards.js package.json"
+          message: "chore(release): bump version to ${{ steps.release_published.outputs.tag_name }}"
+          push: true
+
+      - name: 🚮 Remove pre-releases
+        run: |
+          gh release list --json tagName,isPrerelease -q '.[] | select(.isPrerelease == true) | .tagName' | while read -r tag_name; do
+            gh release delete "$tag_name" --yes
+            git push origin --delete "$tag_name" || true
+            git tag -d "$tag_name" || true
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
