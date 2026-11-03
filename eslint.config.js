@@ -7,10 +7,12 @@ export default [
     rules: {
       "no-unused-vars": "warn",
       "no-console": "off",
+      "no-empty": ["error", { "allowEmptyCatch": true }],
     },
     languageOptions: {
       globals: {
         ...globals.browser,
+        L: "readonly",
       },
     },
   },

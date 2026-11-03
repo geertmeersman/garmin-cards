@@ -65,14 +65,14 @@ async function loadHistory(hass, entityId, days) {
     const result=await hass.connection.sendMessagePromise({type:'recorder/statistics_during_period',start_time:start.toISOString(),end_time:end.toISOString(),statistic_ids:[entityId],period:'day',units:{},types:['mean']});
     const stats=result?.[entityId]||[];
     if (stats.length) return stats.filter(s=>s.mean!=null).map(s=>({date:s.start,value:Math.round(s.mean)}));
-  } catch(_e){}
+  } catch(_e){ /* ignore */ }
   try {
     const result=await hass.connection.sendMessagePromise({type:'history/history_during_period',start_time:start.toISOString(),end_time:end.toISOString(),entity_ids:[entityId],minimal_response:true,no_attributes:true,significant_changes_only:false});
     const states=result?.[entityId]||[];
     const byDay={};
     for(const s of states){const v=parseFloat(s.s??s.state);if(isNaN(v))continue;const day=(s.lu?new Date(s.lu*1000):new Date(s.last_updated)).toISOString().slice(0,10);byDay[day]=v;}
     return Object.entries(byDay).sort(([a],[b])=>a.localeCompare(b)).map(([date,value])=>({date,value:Math.round(value)}));
-  } catch(_e2){}
+  } catch(_e2){ /* ignore */ }
   return [];
 }
 
@@ -372,7 +372,7 @@ class GarminActivityCard extends HTMLElement {
     this._map=L.map(el,{zoomControl:true,scrollWheelZoom:false});
     this._addTileLayer();
     this._polyline=L.polyline(coordinates,{color:this._config.color,weight:this._config.weight,opacity:0.8}).addTo(this._map);
-    setTimeout(()=>{ try{ if(this._map&&this._polyline){this._map.invalidateSize();this._map.fitBounds(this._polyline.getBounds(),{padding:[20,20]});}}catch(_e){}},50);
+    setTimeout(()=>{ try{ if(this._map&&this._polyline){this._map.invalidateSize();this._map.fitBounds(this._polyline.getBounds(),{padding:[20,20]});}}catch(_e){ /* ignore */ }},50);
     L.circleMarker(coordinates[0],{radius:8,color:'#4CAF50',fillColor:'#4CAF50',fillOpacity:1}).addTo(this._map).bindPopup('Start');
     L.circleMarker(coordinates[coordinates.length-1],{radius:8,color:'#F44336',fillColor:'#F44336',fillOpacity:1}).addTo(this._map).bindPopup('Einde');
   }
@@ -884,7 +884,7 @@ class GarminTrainingCard extends HTMLElement {
     const readiness       = stateNum(hass, te(prefix,'training_readiness'));
     const readinessLevel  = attrVal(hass, te(prefix,'training_readiness'), 'level');
     const morningReady    = stateNum(hass, te(prefix,'morning_readiness'));
-    const morningLevel    = attrVal(hass, te(prefix,'morning_readiness'), 'level');
+    // morningLevel reserved for future use
     const recoveryHours   = stateNum(hass, te(prefix,'recovery_time'));
     const statusRaw       = stateStr(hass, te(prefix,'training_status'));
     const statusNl        = TRAINING_STATUS_NL[statusRaw?.toLowerCase()] ?? (statusRaw ? statusRaw.charAt(0).toUpperCase()+statusRaw.slice(1) : '—');
