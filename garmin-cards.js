@@ -52,10 +52,10 @@ function zonesHtml(times, colors, labels) {
   return `<div class="zone-bars">${bars}</div><div class="zone-legend">${legend}</div>`;
 }
 
-function progressBar(value, goal, color) {
+function progressBar(hass, value, goal, color) {
   if (value==null||goal==null||goal===0) return '';
   const pct=Math.min(100,(value/goal)*100);
-  return `<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div><span class="progress-label">${Math.round(pct)}% van doel</span></div>`;
+  return `<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div><span class="progress-label">${Math.round(pct)}${t(hass,'of_goal')}</span></div>`;
 }
 
 // ── Shared history loader ─────────────────────────────────────────────────────
@@ -342,7 +342,7 @@ function activityIcon(typeKey) {
 }
 
 const ACTIVITY_TYPE_NL = {
-  road_biking:'Wielrennen', cycling:t(hass,'cycling'), gravel_cycling:'Gravel fietsen',
+  road_biking:'Wielrennen', cycling:'Fietsen', gravel_cycling:'Gravel fietsen',
   mountain_biking:'Mountainbiken', indoor_cycling:'Indoor fietsen', virtual_ride:'Virtueel fietsen',
   e_bike_fitness:'E-bike', e_bike_mountain:'E-bike mountainbike', recumbent_cycling:'Ligfiets',
   running:'Hardlopen', trail_running:'Trailrunning', treadmill_running:'Loopband',
@@ -622,7 +622,7 @@ function sleepEntityPrefix(entityId) {
 
 function sleepEntity(prefix, key) { return `${prefix}_${SLEEP_ENTITY_SUFFIXES[key]??key}`; }
 
-function stagesHtml(deep, light, rem, awake) {
+function stagesHtml(hass, deep, light, rem, awake) {
   const stages=[{label:t(hass,'deep_sleep'),val:deep,color:SLEEP_COLORS.deep},{label:t(hass,'light_sleep'),val:light,color:SLEEP_COLORS.light},{label:t(hass,'rem_sleep'),val:rem,color:SLEEP_COLORS.rem},{label:t(hass,'awake'),val:awake,color:SLEEP_COLORS.awake}].filter(s=>s.val>0);
   const total=stages.reduce((a,s)=>a+s.val,0);
   if (!total) return '';
@@ -710,7 +710,7 @@ class GarminSleepCard extends HTMLElement {
         </div>
       </div>` : '';
 
-    const stages=stagesHtml(deep,light,rem,awake);
+    const stages=stagesHtml(hass,deep,light,rem,awake);
     const stagesSection = cfg.show_stages!==false && stages ? `
       <div class="section-title">${t(hass,'sleep_stages')}</div><div class="stages-wrap">${stages}</div>` : '';
 
@@ -811,7 +811,7 @@ class GarminHrvCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title',t(hass,'hrv'))}" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','HRV')}" /></div>
         <div class="field"><label>${t(this._hass,'history_days_label')}</label><input id="history_days" type="number" value="${v('history_days',30)}" min="7" max="90" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_status',  'Status & baseline')}
@@ -837,7 +837,7 @@ class GarminHrvCard extends HTMLElement {
 
   setConfig(config){
     if(!config.entity)throw new Error('entity is required');
-    this._config={title:t(hass,'hrv'),history_days:30,show_status:true,show_stats:true,show_history:true,...config};
+    this._config={title:'HRV',history_days:30,show_status:true,show_stats:true,show_history:true,...config};
   }
 
   set hass(hass){
@@ -931,7 +931,7 @@ class GarminHrvCard extends HTMLElement {
 
   getCardSize(){return 6;}
   static getConfigElement(){return document.createElement('garmin-hrv-card-editor');}
-  static getStubConfig(){return{entity:'sensor.garmin_connect_hrv_status',title:t(hass,'hrv')};}
+  static getStubConfig(){return{entity:'sensor.garmin_connect_hrv_status',title:'HRV'};}
 }
 
 if(!customElements.get('garmin-hrv-card-editor'))customElements.define('garmin-hrv-card-editor',GarminHrvCardEditor);
@@ -986,7 +986,7 @@ function te(prefix, key) { return `${prefix}_${TRAINING_ENTITY_SUFFIXES[key] ?? 
 const READINESS_LEVEL_NL = {
   'excellent':    'Uitstekend',
   'good':         'Goed',
-  'moderate':     t(hass,'moderate'),
+  'moderate':     'Moderate',
   'low':          'Laag',
   'poor':         'Slecht',
   'recovery':     'Herstel',
@@ -1501,7 +1501,7 @@ class GarminActivitySummaryCard extends HTMLElement {
         ${distance != null ? `<div class="steps-dist"><ha-icon icon="mdi:map-marker-distance"></ha-icon><span>${fmtDistance(distance)}</span></div>` : ''}
         ${yesterdaySteps != null ? `<div class="steps-dist"><ha-icon icon="mdi:calendar-today"></ha-icon><span>${yesterdaySteps.toLocaleString('nl-BE')} gisteren</span></div>` : ''}
       </div>
-      ${progressBar(steps, stepGoal, stepColor)}` : '';
+      ${progressBar(hass,steps, stepGoal, stepColor)}` : '';
 
     const intensityColor = intensity != null && intensityGoal != null && intensity >= intensityGoal ? '#6bcb77' : 'var(--primary-color)';
     const intensitySection = cfg.show_intensity !== false ? `
@@ -1515,7 +1515,7 @@ class GarminActivitySummaryCard extends HTMLElement {
         ${moderate != null ? `<div class="intensity-item"><ha-icon icon="mdi:walk"></ha-icon><span class="intensity-val">${fmtNum(moderate)}</span><span class="intensity-label">Matig</span></div>` : ''}
         ${vigorous != null ? `<div class="intensity-item"><ha-icon icon="mdi:run-fast"></ha-icon><span class="intensity-val">${fmtNum(vigorous)}</span><span class="intensity-label">Intensief</span></div>` : ''}
       </div>
-      ${progressBar(intensity, intensityGoal, intensityColor)}` : '';
+      ${progressBar(hass,intensity, intensityGoal, intensityColor)}` : '';
 
     const calItems = [
       activeCal  != null ? {icon:'mdi:fire',          label:'Actief',  value:Math.round(activeCal)+' kcal'} : null,
