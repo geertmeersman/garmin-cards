@@ -458,6 +458,7 @@ class GarminActivityCard extends HTMLElement {
   }
 
   _render(activityState, routeState) {
+    const hass  = this._hass;
     const cfg   = this._config;
     const attrs = activityState?.attributes ?? {};
     const activityName = activityState?.state || attrs.activityName || 'Activiteit';
@@ -1520,7 +1521,7 @@ class GarminActivitySummaryCard extends HTMLElement {
     const calItems = [
       activeCal  != null ? {icon:'mdi:fire',          label:'Actief',  value:Math.round(activeCal)+' kcal'} : null,
       bmrCal     != null ? {icon:'mdi:heart-pulse',   label:'BMR',     value:Math.round(bmrCal)+' kcal'} : null,
-      totalCal   != null ? {icon:'mdi:sigma',         label:t(hass,'total'),  value:Math.round(totalCal)+' kcal'} : null,
+      totalCal   != null ? {icon:'mdi:sigma',         label:t(hass,'total_calories'),  value:Math.round(totalCal)+' kcal'} : null,
       activeTime != null ? {icon:'mdi:timer-outline', label:'Actief',  value:fmtMinutes(activeTime)} : null,
       sedentaryTime!=null? {icon:'mdi:seat',          label:t(hass,'sedentary_time'), value:fmtMinutes(sedentaryTime)} : null,
     ].filter(Boolean);
