@@ -77,8 +77,8 @@ async function loadHistory(hass, entityId, days) {
 }
 
 // ── Shared SVG line chart ─────────────────────────────────────────────────────
-function buildLineChart(points, color, opts={}) {
-  if (!points.length) return '<div class="no-history">Geen historiek beschikbaar</div>';
+function buildLineChart(points, color, opts={}, noHistoryMsg) {
+  if (!points.length) return noHistoryMsg || '<div class="no-history">No history available</div>';
   const {minY:forceMin, maxY:forceMax, refLines=[], H=120} = opts;
   const W=600, PAD={top:10,right:32,bottom:24,left:36};
   const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
@@ -100,6 +100,200 @@ function buildLineChart(points, color, opts={}) {
   for(let i=0;i<=4;i++){const val=Math.round(minY+(rangeY/4)*i);const y=yScale(val);yLabels.push(`<text x="${PAD.left-4}" y="${y+3}" font-size="9" fill="var(--secondary-text-color)" text-anchor="end">${val}</text><line x1="${PAD.left}" y1="${y}" x2="${PAD.left+cW}" y2="${y}" stroke="var(--divider-color)" stroke-width="0.5"/>`);}
   const uid=Math.random().toString(36).slice(2,7);
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;">${zones.join('')}${yLabels.join('')}${refs.join('')}<defs><linearGradient id="g-${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.3"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient><clipPath id="c-${uid}"><rect x="${PAD.left}" y="${PAD.top}" width="${cW}" height="${cH}"/></clipPath></defs><g clip-path="url(#c-${uid})"><path d="${areaPath}" fill="url(#g-${uid})"/><path d="${linePts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${lastX}" cy="${lastY}" r="4" fill="${color}"/></g>${xLabels.join('')}</svg>`;
+}
+
+// ── Translations ──────────────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  nl: {
+    no_data: 'Geen data beschikbaar', no_route: t(hass,'no_route'),
+    no_history: 'Geen historiek beschikbaar', start: 'Start', end: 'Einde',
+    of_goal: t(hass,'of_goal'),
+    activity: 'Activiteit', distance: t(hass,'distance'), duration: t(hass,'duration'),
+    speed: t(hass,'speed'), pace: t(hass,'pace'), calories: t(hass,'calories'),
+    avg_hr: t(hass,'avg_hr'), max_hr: t(hass,'max_hr'), elevation_gain: t(hass,'elevation_gain'),
+    elevation_loss: t(hass,'elevation_loss'), avg_power: t(hass,'avg_power'), max_power: t(hass,'max_power'),
+    norm_power: t(hass,'norm_power'), hr_zones: 'Hartslagzones', power_zones: 'Vermogenszones',
+    sleep_score: t(hass,'sleep_score'), bedtime: t(hass,'bedtime'), wake_time: t(hass,'wake_time'),
+    total: t(hass,'total'), sleep_stages: 'Slaapfasen', deep_sleep: t(hass,'deep_sleep'),
+    light_sleep: t(hass,'light_sleep'), rem_sleep: t(hass,'rem_sleep'), awake: t(hass,'awake'),
+    vitals: 'Metingen', hrv: t(hass,'hrv'), resting_hr: t(hass,'resting_hr'),
+    spo2: t(hass,'spo2'), respiration: t(hass,'respiration'), body_battery: t(hass,'body_battery'),
+    hrv_status: 'HRV Status', baseline: 'Baseline', last_night: t(hass,'last_night'),
+    weekly_avg: t(hass,'weekly_avg'), five_min_peak: t(hass,'five_min_peak'),
+    history: 'Historiek', days: 'dagen',
+    readiness: t(hass,'readiness'), morning: t(hass,'morning'), recovery_time: t(hass,'recovery_time'),
+    training_readiness: 'Trainingsgereedheid', vo2max: 'VO2max',
+    running: t(hass,'running'), cycling: t(hass,'cycling'), lactate_threshold: t(hass,'lactate_threshold'),
+    training_status: 'Trainingsstatus', endurance: t(hass,'endurance'),
+    hill_score: t(hass,'hill_score'), scores: 'Scores',
+    body_battery_highest: t(hass,'body_battery_highest'), body_battery_lowest: t(hass,'body_battery_lowest'),
+    charged: t(hass,'charged'), drained: t(hass,'drained'),
+    composition: 'Lichaamssamenstelling', weight: t(hass,'weight'), bmi: t(hass,'bmi'),
+    body_fat: t(hass,'body_fat'), body_water: t(hass,'body_water'),
+    muscle_mass: t(hass,'muscle_mass'), bone_mass: t(hass,'bone_mass'),
+    fitness_age: 'Fitnessleeftijd', achievable: t(hass,'achievable'),
+    calendar_age: t(hass,'calendar_age'), metabolic_age: t(hass,'metabolic_age'),
+    steps: 'Stappen', yesterday: t(hass,'yesterday'), intensity_minutes: 'Intensiteitsminuten',
+    moderate: t(hass,'moderate'), vigorous: t(hass,'vigorous'), active_calories: 'Actief',
+    bmr: 'BMR', total_calories: t(hass,'total'), active_time: 'Actief', sedentary_time: t(hass,'sedentary_time'),
+    entity_label: 'Garmin sensor (bepaalt het account)',
+    title_label: 'Titel', map_height_label: 'Kaart hoogte',
+    color_label: 'Kleur', history_days_label: 'Historiek (dagen)',
+    sections: 'Secties', show_map: 'Kaart', show_stats: 'Statistieken',
+    show_power: 'Vermogen', show_hr_zones: 'Hartslagzones',
+    show_pwr_zones: 'Vermogenszones', show_score: 'Score & tijden',
+    show_stages: 'Slaapfasen', show_vitals: 'Metingen (HRV, SpO2, ...)',
+    show_status: 'Status & baseline', show_history: 'Historiek grafiek',
+    show_readiness: 'Trainingsgereedheid', show_vo2max: 'VO2max',
+    show_scores: 'Scores (uithoudingsvermogen, heuvel)',
+    show_body_battery: 'Body battery', show_composition: 'Lichaamssamenstelling',
+    show_fitness_age: 'Fitnessleeftijd', show_steps: 'Stappen',
+    show_intensity: 'Intensiteitsminuten', show_calories: 'Calorieën & activiteit',
+  },
+  fr: {
+    no_data: 'Aucune donnée disponible', no_route: 'Aucune donnée de route',
+    no_history: 'Aucun historique disponible', start: 'Départ', end: 'Arrivée',
+    of_goal: '% de l\'objectif',
+    activity: 'Activité', distance: 'Distance', duration: 'Durée',
+    speed: 'Vitesse', pace: 'Allure', calories: 'Calories',
+    avg_hr: 'FC moy.', max_hr: 'FC max', elevation_gain: 'Montée',
+    elevation_loss: 'Descente', avg_power: 'Puissance moy.', max_power: 'Puissance max',
+    norm_power: 'Puissance norm.', hr_zones: 'Zones FC', power_zones: 'Zones de puissance',
+    sleep_score: 'Score sommeil', bedtime: 'Coucher', wake_time: 'Réveil',
+    total: 'Total', sleep_stages: 'Phases de sommeil', deep_sleep: 'Sommeil profond',
+    light_sleep: 'Sommeil léger', rem_sleep: 'Sommeil REM', awake: 'Éveillé',
+    vitals: 'Mesures', hrv: 'VFC', resting_hr: 'FC repos',
+    spo2: t(hass,'spo2'), respiration: 'Respiration', body_battery: 'Batterie corporelle',
+    hrv_status: 'Statut VFC', baseline: 'Référence', last_night: 'Nuit dernière',
+    weekly_avg: 'Moy. hebdo.', five_min_peak: 'Pic 5 min',
+    history: 'Historique', days: 'jours',
+    readiness: 'Préparation', morning: 'Matin', recovery_time: 'Récupération',
+    training_readiness: 'Préparation entraînement', vo2max: 'VO2max',
+    running: 'Course', cycling: 'Vélo', lactate_threshold: 'Seuil lactate',
+    training_status: 'Statut entraînement', endurance: 'Endurance',
+    hill_score: 'Score côtes', scores: 'Scores',
+    body_battery_highest: 'Max', body_battery_lowest: 'Min',
+    charged: 'Chargé', drained: 'Consommé',
+    composition: 'Composition corporelle', weight: 'Poids', bmi: 'IMC',
+    body_fat: '% graisse', body_water: '% eau',
+    muscle_mass: 'Masse musculaire', bone_mass: 'Masse osseuse',
+    fitness_age: 'Âge fitness', achievable: 'Atteignable',
+    calendar_age: 'Âge réel', metabolic_age: 'Âge métabolique',
+    steps: 'Pas', yesterday: 'hier', intensity_minutes: "Minutes d'intensité",
+    moderate: 'Modéré', vigorous: 'Intense', active_calories: 'Actif',
+    bmr: 'MB', total_calories: 'Total', active_time: 'Actif', sedentary_time: 'Sédentaire',
+    entity_label: 'Capteur Garmin (détermine le compte)',
+    title_label: 'Titre', map_height_label: 'Hauteur carte',
+    color_label: 'Couleur', history_days_label: 'Historique (jours)',
+    sections: 'Sections', show_map: 'Carte', show_stats: 'Statistiques',
+    show_power: 'Puissance', show_hr_zones: 'Zones FC',
+    show_pwr_zones: 'Zones de puissance', show_score: 'Score & horaires',
+    show_stages: 'Phases de sommeil', show_vitals: 'Mesures (VFC, SpO2, ...)',
+    show_status: 'Statut & référence', show_history: 'Graphique historique',
+    show_readiness: 'Préparation entraînement', show_vo2max: 'VO2max',
+    show_scores: 'Scores (endurance, côtes)',
+    show_body_battery: 'Batterie corporelle', show_composition: 'Composition corporelle',
+    show_fitness_age: 'Âge fitness', show_steps: 'Pas',
+    show_intensity: "Minutes d'intensité", show_calories: 'Calories & activité',
+  },
+  de: {
+    no_data: 'Keine Daten verfügbar', no_route: 'Keine Routendaten',
+    no_history: 'Kein Verlauf verfügbar', start: 'Start', end: 'Ende',
+    of_goal: '% des Ziels',
+    activity: 'Aktivität', distance: 'Distanz', duration: 'Dauer',
+    speed: 'Geschwindigkeit', pace: t(hass,'pace'), calories: 'Kalorien',
+    avg_hr: 'Ø HF', max_hr: 'Max HF', elevation_gain: 'Anstieg',
+    elevation_loss: 'Abstieg', avg_power: 'Ø Leistung', max_power: 'Max Leistung',
+    norm_power: 'Norm. Leistung', hr_zones: 'HF-Zonen', power_zones: 'Leistungszonen',
+    sleep_score: 'Schlafwert', bedtime: 'Schlafenszeit', wake_time: 'Aufwachzeit',
+    total: 'Gesamt', sleep_stages: 'Schlafphasen', deep_sleep: 'Tiefschlaf',
+    light_sleep: 'Leichtschlaf', rem_sleep: 'REM-Schlaf', awake: 'Wach',
+    vitals: 'Messwerte', hrv: t(hass,'hrv'), resting_hr: 'Ruhe-HF',
+    spo2: t(hass,'spo2'), respiration: 'Atmung', body_battery: t(hass,'body_battery'),
+    hrv_status: 'HRV-Status', baseline: 'Grundlinie', last_night: 'Letzte Nacht',
+    weekly_avg: 'Wochendurchschnitt', five_min_peak: '5-Min-Spitze',
+    history: 'Verlauf', days: 'Tage',
+    readiness: 'Bereitschaft', morning: 'Morgen', recovery_time: 'Erholungszeit',
+    training_readiness: 'Trainingsbereitschaft', vo2max: 'VO2max',
+    running: 'Laufen', cycling: 'Radfahren', lactate_threshold: 'Laktatschwelle',
+    training_status: 'Trainingsstatus', endurance: 'Ausdauer',
+    hill_score: 'Bergwertung', scores: 'Wertungen',
+    body_battery_highest: 'Höchst', body_battery_lowest: 'Niedrigst',
+    charged: 'Geladen', drained: 'Verbraucht',
+    composition: 'Körperzusammensetzung', weight: t(hass,'weight'), bmi: t(hass,'bmi'),
+    body_fat: 'Körperfett', body_water: 'Körperwasser',
+    muscle_mass: 'Muskelmasse', bone_mass: 'Knochenmasse',
+    fitness_age: 'Fitnessalter', achievable: 'Erreichbar',
+    calendar_age: 'Kalenderalter', metabolic_age: 'Stoffwechselalter',
+    steps: 'Schritte', yesterday: 'gestern', intensity_minutes: 'Intensitätsminuten',
+    moderate: 'Moderat', vigorous: 'Intensiv', active_calories: 'Aktiv',
+    bmr: 'Grundumsatz', total_calories: 'Gesamt', active_time: 'Aktiv', sedentary_time: 'Sitzend',
+    entity_label: 'Garmin-Sensor (bestimmt das Konto)',
+    title_label: 'Titel', map_height_label: 'Kartenhöhe',
+    color_label: 'Farbe', history_days_label: 'Verlauf (Tage)',
+    sections: 'Abschnitte', show_map: 'Karte', show_stats: 'Statistiken',
+    show_power: 'Leistung', show_hr_zones: 'HF-Zonen',
+    show_pwr_zones: 'Leistungszonen', show_score: 'Wert & Zeiten',
+    show_stages: 'Schlafphasen', show_vitals: 'Messwerte (HRV, SpO2, ...)',
+    show_status: 'Status & Grundlinie', show_history: 'Verlaufsdiagramm',
+    show_readiness: 'Trainingsbereitschaft', show_vo2max: 'VO2max',
+    show_scores: 'Wertungen (Ausdauer, Berge)',
+    show_body_battery: t(hass,'body_battery'), show_composition: 'Körperzusammensetzung',
+    show_fitness_age: 'Fitnessalter', show_steps: 'Schritte',
+    show_intensity: 'Intensitätsminuten', show_calories: 'Kalorien & Aktivität',
+  },
+};
+
+const EN_TRANSLATIONS = {
+  no_data: 'No data available', no_route: 'No route data available',
+  no_history: 'No history available', start: 'Start', end: 'End',
+  of_goal: '% of goal',
+  activity: 'Activity', distance: 'Distance', duration: 'Duration',
+  speed: 'Speed', pace: 'Pace', calories: 'Calories',
+  avg_hr: 'Avg HR', max_hr: t(hass,'max_hr'), elevation_gain: 'Elevation gain',
+  elevation_loss: 'Elevation loss', avg_power: 'Avg power', max_power: 'Max power',
+  norm_power: 'Norm. power', hr_zones: 'Heart rate zones', power_zones: 'Power zones',
+  sleep_score: 'Sleep score', bedtime: 'Bedtime', wake_time: 'Wake time',
+  total: 'Total', sleep_stages: 'Sleep stages', deep_sleep: 'Deep sleep',
+  light_sleep: 'Light sleep', rem_sleep: 'REM sleep', awake: 'Awake',
+  vitals: 'Vitals', hrv: t(hass,'hrv'), resting_hr: 'Resting HR',
+  spo2: t(hass,'spo2'), respiration: 'Respiration', body_battery: t(hass,'body_battery'),
+  hrv_status: 'HRV Status', baseline: 'Baseline', last_night: 'Last night',
+  weekly_avg: 'Weekly avg', five_min_peak: '5-min peak',
+  history: 'History', days: 'days',
+  readiness: 'Readiness', morning: 'Morning', recovery_time: 'Recovery time',
+  training_readiness: 'Training readiness', vo2max: 'VO2max',
+  running: 'Running', cycling: 'Cycling', lactate_threshold: 'Lactate threshold',
+  training_status: 'Training status', endurance: 'Endurance',
+  hill_score: 'Hill score', scores: 'Scores',
+  body_battery_highest: 'Highest', body_battery_lowest: 'Lowest',
+  charged: 'Charged', drained: 'Drained',
+  composition: 'Body composition', weight: 'Weight', bmi: t(hass,'bmi'),
+  body_fat: 'Body fat', body_water: 'Body water',
+  muscle_mass: 'Muscle mass', bone_mass: 'Bone mass',
+  fitness_age: 'Fitness age', achievable: 'Achievable',
+  calendar_age: 'Calendar age', metabolic_age: 'Metabolic age',
+  steps: 'Steps', yesterday: 'yesterday', intensity_minutes: 'Intensity minutes',
+  moderate: 'Moderate', vigorous: 'Vigorous', active_calories: 'Active',
+  bmr: 'BMR', total_calories: 'Total', active_time: 'Active', sedentary_time: 'Sedentary',
+  entity_label: 'Garmin sensor (determines the account)',
+  title_label: 'Title', map_height_label: 'Map height',
+  color_label: 'Color', history_days_label: 'History (days)',
+  sections: 'Sections', show_map: 'Map', show_stats: 'Statistics',
+  show_power: 'Power', show_hr_zones: 'Heart rate zones',
+  show_pwr_zones: 'Power zones', show_score: 'Score & times',
+  show_stages: 'Sleep stages', show_vitals: 'Vitals (HRV, SpO2, ...)',
+  show_status: 'Status & baseline', show_history: 'History chart',
+  show_readiness: 'Training readiness', show_vo2max: 'VO2max',
+  show_scores: 'Scores (endurance, hill)',
+  show_body_battery: 'Body battery', show_composition: 'Body composition',
+  show_fitness_age: 'Fitness age', show_steps: 'Steps',
+  show_intensity: 'Intensity minutes', show_calories: 'Calories & activity',
+};
+
+function t(hass, key) {
+  const lang = (hass?.locale?.language || 'en').slice(0, 2).toLowerCase();
+  return (TRANSLATIONS[lang]?.[key]) ?? EN_TRANSLATIONS[key] ?? key;
 }
 
 // ── Shared editor helpers ─────────────────────────────────────────────────────
@@ -148,7 +342,7 @@ function activityIcon(typeKey) {
 }
 
 const ACTIVITY_TYPE_NL = {
-  road_biking:'Wielrennen', cycling:'Fietsen', gravel_cycling:'Gravel fietsen',
+  road_biking:'Wielrennen', cycling:t(hass,'cycling'), gravel_cycling:'Gravel fietsen',
   mountain_biking:'Mountainbiken', indoor_cycling:'Indoor fietsen', virtual_ride:'Virtueel fietsen',
   e_bike_fitness:'E-bike', e_bike_mountain:'E-bike mountainbike', recumbent_cycling:'Ligfiets',
   running:'Hardlopen', trail_running:'Trailrunning', treadmill_running:'Loopband',
@@ -192,10 +386,10 @@ class GarminActivityCardEditor extends HTMLElement {
 
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
-        <div><label>Garmin activiteit sensor</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>Titel</label><input id="title" type="text" value="${v('title','Laatste activiteit')}" /></div>
-        <div class="field"><label>Kaart hoogte</label><input id="map_height" type="text" value="${v('map_height','300px')}" /></div>
-        <div class="field"><label>Kleur</label><input id="color" type="text" value="${v('color','#2d5bff')}" /></div>
+        <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Laatste activiteit')}" /></div>
+        <div class="field"><label>${t(this._hass,'map_height_label')}</label><input id="map_height" type="text" value="${v('map_height','300px')}" /></div>
+        <div class="field"><label>${t(this._hass,'color_label')}</label><input id="color" type="text" value="${v('color','#2d5bff')}" /></div>
         <div class="section-header">Secties</div>
         ${renderToggle('show_map',      'Kaart',           v('show_map',true))}
         ${renderToggle('show_stats',    'Statistieken',    v('show_stats',true))}
@@ -274,15 +468,15 @@ class GarminActivityCard extends HTMLElement {
 
     const statsHtml = cfg.show_stats !== false ? `
       <div class="stats">${[
-        {icon:'mdi:map-marker-distance', label:'Afstand',   value:fmtDistance(attrs.distance)},
-        {icon:'mdi:timer-outline',       label:'Duur',      value:fmtDuration(attrs.duration)},
-        cycling?{icon:'mdi:speedometer',label:'Snelheid',  value:fmtSpeed(attrs.averageSpeed)}
-               :{icon:'mdi:run-fast',   label:'Tempo',     value:fmtPace(attrs.averageSpeed)},
-        {icon:'mdi:fire',               label:'Calorieën', value:fmtCal(attrs.calories)},
-        {icon:'mdi:heart-pulse',        label:'Gem. HR',   value:fmtHR(attrs.averageHR)},
-        {icon:'mdi:heart',              label:'Max HR',    value:fmtHR(attrs.maxHR)},
-        {icon:'mdi:elevation-rise',     label:'Stijging',  value:fmtElev(attrs.elevationGain)},
-        {icon:'mdi:elevation-decline',  label:'Daling',    value:fmtElev(attrs.elevationLoss)},
+        {icon:'mdi:map-marker-distance', label:t(hass,'distance'),   value:fmtDistance(attrs.distance)},
+        {icon:'mdi:timer-outline',       label:t(hass,'duration'),      value:fmtDuration(attrs.duration)},
+        cycling?{icon:'mdi:speedometer',label:t(hass,'speed'),  value:fmtSpeed(attrs.averageSpeed)}
+               :{icon:'mdi:run-fast',   label:t(hass,'pace'),     value:fmtPace(attrs.averageSpeed)},
+        {icon:'mdi:fire',               label:t(hass,'calories'), value:fmtCal(attrs.calories)},
+        {icon:'mdi:heart-pulse',        label:t(hass,'avg_hr'),   value:fmtHR(attrs.averageHR)},
+        {icon:'mdi:heart',              label:t(hass,'max_hr'),    value:fmtHR(attrs.maxHR)},
+        {icon:'mdi:elevation-rise',     label:t(hass,'elevation_gain'),  value:fmtElev(attrs.elevationGain)},
+        {icon:'mdi:elevation-decline',  label:t(hass,'elevation_loss'),    value:fmtElev(attrs.elevationLoss)},
       ].map(s=>`<div class="stat"><ha-icon icon="${s.icon}"></ha-icon><span class="value">${s.value}</span><span class="label">${s.label}</span></div>`).join('')}
       </div>` : '';
 
@@ -296,19 +490,19 @@ class GarminActivityCard extends HTMLElement {
 
     const hrTimes = [1,2,3,4,5].map(i=>attrs[`hrTimeInZone_${i}`]??0);
     const hrZonesHtml = cfg.show_hr_zones!==false && hrTimes.some(t=>t>0) ? `
-      <div class="section-title">Hartslagzones</div>
+      <div class="section-title">${t(hass,'hr_zones')}</div>
       <div class="zones-wrap">${zonesHtml(hrTimes,HR_ZONE_COLORS,HR_ZONE_LABELS)}</div>` : '';
 
     const pwTimes = [1,2,3,4,5].map(i=>attrs[`powerTimeInZone_${i}`]??0);
     const pwZonesHtml = cfg.show_pwr_zones!==false && pwTimes.some(t=>t>0) ? `
-      <div class="section-title">Vermogenszones</div>
+      <div class="section-title">${t(hass,'power_zones')}</div>
       <div class="zones-wrap">${zonesHtml(pwTimes,POWER_ZONE_COLORS,POWER_ZONE_LABELS)}</div>` : '';
 
     const polylineData = routeState?.attributes?.polyline;
     const hasRoute = Array.isArray(polylineData)&&polylineData.length>0;
     const mapSection = cfg.show_map===false ? '' : hasRoute
       ? `<div id="map" style="height:${cfg.map_height};width:100%;"></div>`
-      : `<div class="no-route">Geen routedata beschikbaar</div>`;
+      : `<div class="no-route">${t(hass,'no_route')}</div>`;
 
     this.shadowRoot.innerHTML = `
       <ha-card>
@@ -373,8 +567,8 @@ class GarminActivityCard extends HTMLElement {
     this._addTileLayer();
     this._polyline=L.polyline(coordinates,{color:this._config.color,weight:this._config.weight,opacity:0.8}).addTo(this._map);
     setTimeout(()=>{ try{ if(this._map&&this._polyline){this._map.invalidateSize();this._map.fitBounds(this._polyline.getBounds(),{padding:[20,20]});}}catch(_e){ /* ignore */ }},50);
-    L.circleMarker(coordinates[0],{radius:8,color:'#4CAF50',fillColor:'#4CAF50',fillOpacity:1}).addTo(this._map).bindPopup('Start');
-    L.circleMarker(coordinates[coordinates.length-1],{radius:8,color:'#F44336',fillColor:'#F44336',fillOpacity:1}).addTo(this._map).bindPopup('Einde');
+    L.circleMarker(coordinates[0],{radius:8,color:'#4CAF50',fillColor:'#4CAF50',fillOpacity:1}).addTo(this._map).bindPopup(t(hass,'start'));
+    L.circleMarker(coordinates[coordinates.length-1],{radius:8,color:'#F44336',fillColor:'#F44336',fillOpacity:1}).addTo(this._map).bindPopup(t(hass,'end'));
   }
 
   async _fetchMapTilesToken() {
@@ -429,7 +623,7 @@ function sleepEntityPrefix(entityId) {
 function sleepEntity(prefix, key) { return `${prefix}_${SLEEP_ENTITY_SUFFIXES[key]??key}`; }
 
 function stagesHtml(deep, light, rem, awake) {
-  const stages=[{label:'Diepe slaap',val:deep,color:SLEEP_COLORS.deep},{label:'Lichte slaap',val:light,color:SLEEP_COLORS.light},{label:'REM slaap',val:rem,color:SLEEP_COLORS.rem},{label:'Wakker',val:awake,color:SLEEP_COLORS.awake}].filter(s=>s.val>0);
+  const stages=[{label:t(hass,'deep_sleep'),val:deep,color:SLEEP_COLORS.deep},{label:t(hass,'light_sleep'),val:light,color:SLEEP_COLORS.light},{label:t(hass,'rem_sleep'),val:rem,color:SLEEP_COLORS.rem},{label:t(hass,'awake'),val:awake,color:SLEEP_COLORS.awake}].filter(s=>s.val>0);
   const total=stages.reduce((a,s)=>a+s.val,0);
   if (!total) return '';
   const bars=stages.map(s=>`<div class="stage-bar" style="flex:${s.val};background:${s.color}" title="${s.label}: ${fmtMinutes(s.val)}"></div>`).join('');
@@ -450,12 +644,12 @@ class GarminSleepCardEditor extends HTMLElement {
 
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
-        <div><label>Garmin sensor (bepaalt het account)</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>Titel</label><input id="title" type="text" value="${v('title','Slaap')}" /></div>
+        <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Slaap')}" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_score',  'Score & tijden')}
-        ${toggle('show_stages', 'Slaapfasen')}
-        ${toggle('show_vitals', 'Metingen (HRV, SpO2, ...)')}
+        ${toggle('show_stages', t(this._hass,'show_stages'))}
+        ${toggle('show_vitals', t(this._hass,'show_vitals'))}
       </div>`;
 
     const sel=this.shadowRoot.getElementById('entity');
@@ -518,17 +712,17 @@ class GarminSleepCard extends HTMLElement {
 
     const stages=stagesHtml(deep,light,rem,awake);
     const stagesSection = cfg.show_stages!==false && stages ? `
-      <div class="section-title">Slaapfasen</div><div class="stages-wrap">${stages}</div>` : '';
+      <div class="section-title">${t(hass,'sleep_stages')}</div><div class="stages-wrap">${stages}</div>` : '';
 
     const vitals=[
-      hrv !=null?{icon:'mdi:heart-pulse',     label:'HRV',         value:Math.round(hrv)+' ms'}:null,
-      rhr !=null?{icon:'mdi:heart',           label:'Rust HR',      value:Math.round(rhr)+' bpm'}:null,
-      spo2!=null?{icon:'mdi:blood-bag',       label:'SpO2',         value:Math.round(spo2)+' %'}:null,
-      resp!=null?{icon:'mdi:lungs',           label:'Ademhaling',   value:resp.toFixed(1)+' /min'}:null,
-      bb  !=null?{icon:'mdi:battery-charging',label:'Body Battery', value:Math.round(bb)+' %'}:null,
+      hrv !=null?{icon:'mdi:heart-pulse',     label:t(hass,'hrv'),         value:Math.round(hrv)+' ms'}:null,
+      rhr !=null?{icon:'mdi:heart',           label:t(hass,'resting_hr'),      value:Math.round(rhr)+' bpm'}:null,
+      spo2!=null?{icon:'mdi:blood-bag',       label:t(hass,'spo2'),         value:Math.round(spo2)+' %'}:null,
+      resp!=null?{icon:'mdi:lungs',           label:t(hass,'respiration'),   value:resp.toFixed(1)+' /min'}:null,
+      bb  !=null?{icon:'mdi:battery-charging',label:t(hass,'body_battery'), value:Math.round(bb)+' %'}:null,
     ].filter(Boolean);
     const vitalsSection = cfg.show_vitals!==false && vitals.length ? `
-      <div class="section-title">Metingen</div>
+      <div class="section-title">${t(hass,'vitals')}</div>
       <div class="stats" style="grid-template-columns:repeat(${Math.min(vitals.length,3)},1fr)">
         ${vitals.map(s=>`<div class="stat"><ha-icon icon="${s.icon}"></ha-icon><span class="value">${s.value}</span><span class="label">${s.label}</span></div>`).join('')}
       </div>` : '';
@@ -616,13 +810,13 @@ class GarminHrvCardEditor extends HTMLElement {
 
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
-        <div><label>Garmin sensor (bepaalt het account)</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>Titel</label><input id="title" type="text" value="${v('title','HRV')}" /></div>
-        <div class="field"><label>Historiek (dagen)</label><input id="history_days" type="number" value="${v('history_days',30)}" min="7" max="90" /></div>
+        <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title',t(hass,'hrv'))}" /></div>
+        <div class="field"><label>${t(this._hass,'history_days_label')}</label><input id="history_days" type="number" value="${v('history_days',30)}" min="7" max="90" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_status',  'Status & baseline')}
         ${toggle('show_stats',   'Statistieken')}
-        ${toggle('show_history', 'Historiek grafiek')}
+        ${toggle('show_history', t(this._hass,'show_history'))}
       </div>`;
 
     const sel=this.shadowRoot.getElementById('entity');
@@ -643,7 +837,7 @@ class GarminHrvCard extends HTMLElement {
 
   setConfig(config){
     if(!config.entity)throw new Error('entity is required');
-    this._config={title:'HRV',history_days:30,show_status:true,show_stats:true,show_history:true,...config};
+    this._config={title:t(hass,'hrv'),history_days:30,show_status:true,show_stats:true,show_history:true,...config};
   }
 
   set hass(hass){
@@ -705,7 +899,7 @@ class GarminHrvCard extends HTMLElement {
 
     const historySection = cfg.show_history!==false ? `
       <div class="section-title">Historiek (${cfg.history_days} dagen)</div>
-      <div class="chart-wrap">${buildLineChart(this._historyPoints,color,{refLines:[{type:"zone",y1:balancedLow??0,y2:balancedUpper??0,color:"#6bcb77"},{type:"zone",y1:lowUpper??0,y2:balancedLow??0,color:"#ffd166"},{type:"line",value:balancedUpper,color:"#6bcb77"},{type:"line",value:balancedLow,color:"#6bcb77"},{type:"line",value:lowUpper,color:"#ffd166"}]})}</div>` : '';
+      <div class="chart-wrap">${buildLineChart(this._historyPoints,color,{refLines:[{type:"zone",y1:balancedLow??0,y2:balancedUpper??0,color:"#6bcb77"},{type:"zone",y1:lowUpper??0,y2:balancedLow??0,color:"#ffd166"},{type:"line",value:balancedUpper,color:"#6bcb77"},{type:"line",value:balancedLow,color:"#6bcb77"},{type:"line",value:lowUpper,color:"#ffd166"}]},`<div class="no-history">${t(hass,'no_history')}</div>`)}</div>` : '';
 
     this.shadowRoot.innerHTML = `
       <ha-card>
@@ -737,7 +931,7 @@ class GarminHrvCard extends HTMLElement {
 
   getCardSize(){return 6;}
   static getConfigElement(){return document.createElement('garmin-hrv-card-editor');}
-  static getStubConfig(){return{entity:'sensor.garmin_connect_hrv_status',title:'HRV'};}
+  static getStubConfig(){return{entity:'sensor.garmin_connect_hrv_status',title:t(hass,'hrv')};}
 }
 
 if(!customElements.get('garmin-hrv-card-editor'))customElements.define('garmin-hrv-card-editor',GarminHrvCardEditor);
@@ -792,7 +986,7 @@ function te(prefix, key) { return `${prefix}_${TRAINING_ENTITY_SUFFIXES[key] ?? 
 const READINESS_LEVEL_NL = {
   'excellent':    'Uitstekend',
   'good':         'Goed',
-  'moderate':     'Matig',
+  'moderate':     t(hass,'moderate'),
   'low':          'Laag',
   'poor':         'Slecht',
   'recovery':     'Herstel',
@@ -840,10 +1034,10 @@ class GarminTrainingCardEditor extends HTMLElement {
     const toggle=(id,label)=>`<div class="toggle-row"><span class="toggle-label">${label}</span><ha-switch id="${id}" ${v(id,true)?'checked':''}></ha-switch></div>`;
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
-        <div><label>Garmin sensor (bepaalt het account)</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>Titel</label><input id="title" type="text" value="${v('title','Training')}" /></div>
+        <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Training')}" /></div>
         <div class="section-header">Secties</div>
-        ${toggle('show_readiness', 'Trainingsgereedheid')}
+        ${toggle('show_readiness', t(this._hass,'show_readiness'))}
         ${toggle('show_vo2max',    'VO2max')}
         ${toggle('show_status',    'Trainingsstatus')}
         ${toggle('show_scores',    'Scores (uithoudingsvermogen, heuvel)')}
@@ -895,10 +1089,10 @@ class GarminTrainingCard extends HTMLElement {
     const lactateHR       = stateNum(hass, te(prefix,'lactate_hr'));
 
     const readinessSection = cfg.show_readiness !== false ? `
-      <div class="section-title">Trainingsgereedheid</div>
+      <div class="section-title">${t(hass,'training_readiness')}</div>
       <div class="rings-row">
-        ${scoreRing(readiness, 100, 'Gereedheid', scoreColor(readiness, 100))}
-        ${scoreRing(morningReady, 100, 'Ochtend', scoreColor(morningReady, 100))}
+        ${scoreRing(readiness, 100, t(hass,'readiness'), scoreColor(readiness, 100))}
+        ${scoreRing(morningReady, 100, t(hass,'morning'), scoreColor(morningReady, 100))}
         <div class="recovery-block">
           <span class="recovery-val">${fmtRecovery(recoveryHours)}</span>
           <span class="recovery-label">Hersteltijd</span>
@@ -907,7 +1101,7 @@ class GarminTrainingCard extends HTMLElement {
       </div>` : '';
 
     const vo2maxSection = cfg.show_vo2max !== false ? `
-      <div class="section-title">VO2max</div>
+      <div class="section-title">${t(hass,'vo2max')}</div>
       <div class="stats">
         <div class="stat">
           <ha-icon icon="mdi:run"></ha-icon>
@@ -928,7 +1122,7 @@ class GarminTrainingCard extends HTMLElement {
 
     const sColor = statusColor(statusRaw);
     const statusSection = cfg.show_status !== false ? `
-      <div class="section-title">Trainingsstatus</div>
+      <div class="section-title">${t(hass,'training_status')}</div>
       <div class="status-row">
         <div class="status-badge" style="--s-color:${sColor}">
           <span class="status-val">${statusNl}</span>
@@ -936,7 +1130,7 @@ class GarminTrainingCard extends HTMLElement {
       </div>` : '';
 
     const scoresSection = cfg.show_scores !== false && (endurance != null || hill != null) ? `
-      <div class="section-title">Scores</div>
+      <div class="section-title">${t(hass,'scores')}</div>
       <div class="stats">
         ${endurance != null ? `<div class="stat">
           <ha-icon icon="mdi:run-fast"></ha-icon>
@@ -1034,11 +1228,11 @@ class GarminBodyCardEditor extends HTMLElement {
     const toggle=(id,label)=>`<div class="toggle-row"><span class="toggle-label">${label}</span><ha-switch id="${id}" ${v(id,true)?'checked':''}></ha-switch></div>`;
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
-        <div><label>Garmin sensor (bepaalt het account)</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>Titel</label><input id="title" type="text" value="${v('title','Lichaam')}" /></div>
+        <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Lichaam')}" /></div>
         <div class="field"><label>Historiek body battery (dagen)</label><input id="history_days" type="number" value="${v('history_days',14)}" min="7" max="90" /></div>
         <div class="section-header">Secties</div>
-        ${toggle('show_body_battery', 'Body battery')}
+        ${toggle('show_body_battery', t(this._hass,'show_body_battery'))}
         ${toggle('show_composition',  'Lichaamssamenstelling')}
         ${toggle('show_fitness_age',  'Fitnessleeftijd')}
       </div>`;
@@ -1114,7 +1308,7 @@ class GarminBodyCard extends HTMLElement {
     const bbColor = batteryColor(bb);
 
     const bbSection = cfg.show_body_battery !== false ? `
-      <div class="section-title">Body Battery</div>
+      <div class="section-title">${t(hass,'body_battery')}</div>
       <div class="bb-top">
         <div class="bb-current">
           <ha-icon icon="${batteryIcon(bb)}" style="color:${bbColor};--mdc-icon-size:36px"></ha-icon>
@@ -1127,25 +1321,25 @@ class GarminBodyCard extends HTMLElement {
           ${bbDrained!= null ? `<div class="bb-stat"><span class="bb-stat-val" style="color:#f4845f">-${Math.round(bbDrained)}%</span><span class="bb-stat-label">Verbruikt</span></div>` : ''}
         </div>
       </div>
-      <div class="chart-wrap">${buildLineChart(this._historyPoints,bbColor,{minY:0,maxY:100,H:80})}</div>` : '';
+      <div class="chart-wrap">${buildLineChart(this._historyPoints,bbColor,{minY:0,maxY:100,H:80},`<div class="no-history">${t(hass,'no_history')}</div>`)}</div>` : '';
 
     const compItems = [
-      weight  != null ? {icon:'mdi:scale',      label:'Gewicht',    value:weight.toFixed(1)+' kg'} : null,
-      bmi     != null ? {icon:'mdi:human',       label:'BMI',        value:bmi.toFixed(1)} : null,
-      fat     != null ? {icon:'mdi:water',       label:'Vetpercentage', value:fat.toFixed(1)+'%'} : null,
-      water   != null ? {icon:'mdi:water-outline',label:'Waterpercentage',value:water.toFixed(1)+'%'} : null,
-      muscle  != null ? {icon:'mdi:arm-flex',    label:'Spiermassa', value:muscle.toFixed(1)+' kg'} : null,
-      bone    != null ? {icon:'mdi:bone',        label:'Botmassa',   value:bone.toFixed(1)+' kg'} : null,
+      weight  != null ? {icon:'mdi:scale',      label:t(hass,'weight'),    value:weight.toFixed(1)+' kg'} : null,
+      bmi     != null ? {icon:'mdi:human',       label:t(hass,'bmi'),        value:bmi.toFixed(1)} : null,
+      fat     != null ? {icon:'mdi:water',       label:t(hass,'body_fat'), value:fat.toFixed(1)+'%'} : null,
+      water   != null ? {icon:'mdi:water-outline',label:t(hass,'body_water'),value:water.toFixed(1)+'%'} : null,
+      muscle  != null ? {icon:'mdi:arm-flex',    label:t(hass,'muscle_mass'), value:muscle.toFixed(1)+' kg'} : null,
+      bone    != null ? {icon:'mdi:bone',        label:t(hass,'bone_mass'),   value:bone.toFixed(1)+' kg'} : null,
     ].filter(Boolean);
 
     const compSection = cfg.show_composition !== false && compItems.length ? `
-      <div class="section-title">Lichaamssamenstelling</div>
+      <div class="section-title">${t(hass,'composition')}</div>
       <div class="stats" style="grid-template-columns:repeat(${Math.min(compItems.length,3)},1fr)">
         ${compItems.map(s=>`<div class="stat"><ha-icon icon="${s.icon}"></ha-icon><span class="value">${s.value}</span><span class="label">${s.label}</span></div>`).join('')}
       </div>` : '';
 
     const ageSection = cfg.show_fitness_age !== false && fitAge != null ? `
-      <div class="section-title">Fitnessleeftijd</div>
+      <div class="section-title">${t(hass,'fitness_age')}</div>
       <div class="age-row">
         <div class="age-item">
           <span class="age-val" style="color:${fitAge <= (chronAge??99) ? '#6bcb77' : '#f4845f'}">${fitAge.toFixed(1)}</span>
@@ -1239,11 +1433,11 @@ class GarminActivitySummaryCardEditor extends HTMLElement {
     const toggle=(id,label)=>`<div class="toggle-row"><span class="toggle-label">${label}</span><ha-switch id="${id}" ${v(id,true)?'checked':''}></ha-switch></div>`;
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
-        <div><label>Garmin sensor (bepaalt het account)</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>Titel</label><input id="title" type="text" value="${v('title','Dagelijkse activiteit')}" /></div>
+        <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Dagelijkse activiteit')}" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_steps',     'Stappen')}
-        ${toggle('show_intensity', 'Intensiteitsminuten')}
+        ${toggle('show_intensity', t(this._hass,'show_intensity'))}
         ${toggle('show_calories',  'Calorieën & activiteit')}
       </div>`;
 
@@ -1295,7 +1489,7 @@ class GarminActivitySummaryCard extends HTMLElement {
     const stepColor = steps != null && stepGoal != null && steps >= stepGoal ? '#6bcb77' : 'var(--primary-color)';
 
     const stepsSection = cfg.show_steps !== false ? `
-      <div class="section-title">Stappen</div>
+      <div class="section-title">${t(hass,'steps')}</div>
       <div class="steps-row">
         <div class="steps-main">
           <ha-icon icon="mdi:walk" style="color:${stepColor};--mdc-icon-size:28px"></ha-icon>
@@ -1311,7 +1505,7 @@ class GarminActivitySummaryCard extends HTMLElement {
 
     const intensityColor = intensity != null && intensityGoal != null && intensity >= intensityGoal ? '#6bcb77' : 'var(--primary-color)';
     const intensitySection = cfg.show_intensity !== false ? `
-      <div class="section-title">Intensiteitsminuten</div>
+      <div class="section-title">${t(hass,'intensity_minutes')}</div>
       <div class="intensity-row">
         <div class="intensity-item">
           <ha-icon icon="mdi:lightning-bolt" style="color:${intensityColor}"></ha-icon>
@@ -1326,13 +1520,13 @@ class GarminActivitySummaryCard extends HTMLElement {
     const calItems = [
       activeCal  != null ? {icon:'mdi:fire',          label:'Actief',  value:Math.round(activeCal)+' kcal'} : null,
       bmrCal     != null ? {icon:'mdi:heart-pulse',   label:'BMR',     value:Math.round(bmrCal)+' kcal'} : null,
-      totalCal   != null ? {icon:'mdi:sigma',         label:'Totaal',  value:Math.round(totalCal)+' kcal'} : null,
+      totalCal   != null ? {icon:'mdi:sigma',         label:t(hass,'total'),  value:Math.round(totalCal)+' kcal'} : null,
       activeTime != null ? {icon:'mdi:timer-outline', label:'Actief',  value:fmtMinutes(activeTime)} : null,
-      sedentaryTime!=null? {icon:'mdi:seat',          label:'Zittend', value:fmtMinutes(sedentaryTime)} : null,
+      sedentaryTime!=null? {icon:'mdi:seat',          label:t(hass,'sedentary_time'), value:fmtMinutes(sedentaryTime)} : null,
     ].filter(Boolean);
 
     const calSection = cfg.show_calories !== false && calItems.length ? `
-      <div class="section-title">Calorieën & activiteit</div>
+      <div class="section-title">${t(hass,'show_calories')}</div>
       <div class="stats" style="grid-template-columns:repeat(${Math.min(calItems.length,3)},1fr)">
         ${calItems.map(s=>`<div class="stat"><ha-icon icon="${s.icon}"></ha-icon><span class="value">${s.value}</span><span class="label">${s.label}</span></div>`).join('')}
       </div>` : '';
