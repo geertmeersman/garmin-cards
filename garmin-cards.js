@@ -598,7 +598,7 @@ if (!customElements.get('garmin-activity-card-editor')) customElements.define('g
 if (!customElements.get('garmin-activity-card')) {
   customElements.define('garmin-activity-card',GarminActivityCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-activity-card',name:'Garmin Activity Card',description:'Toont de laatste Garmin activiteit met kaart, statistieken, vermogen en zones'});
+  window.customCards.push({type:'garmin-activity-card',name:'Garmin Activity Card',description:'Last activity with route map, stats, power and HR/power zones'});
   console.info('%c GARMIN-ACTIVITY-CARD %c loaded ','background:#2d5bff;color:white;','');
 }
 const SLEEP_COLORS = { deep:'#3a5fc8', light:'#6ec6f5', rem:'#9b59b6', awake:'#f4845f' };
@@ -774,7 +774,7 @@ if (!customElements.get('garmin-sleep-card-editor')) customElements.define('garm
 if (!customElements.get('garmin-sleep-card')) {
   customElements.define('garmin-sleep-card',GarminSleepCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-sleep-card',name:'Garmin Sleep Card',description:'Toont Garmin slaapdata: score, fasen, HRV, SpO2 en meer'});
+  window.customCards.push({type:'garmin-sleep-card',name:'Garmin Sleep Card',description:'Sleep score, stages, HRV, SpO2, respiration and body battery'});
   console.info('%c GARMIN-SLEEP-CARD %c loaded ','background:#3a5fc8;color:white;','');
 }
 const HRV_STATUS_NL = { balanced:'Gebalanceerd', low:'Laag', unbalanced:'Ongebalanceerd', poor:'Slecht', unknown:'Onbekend' };
@@ -939,7 +939,7 @@ if(!customElements.get('garmin-hrv-card-editor'))customElements.define('garmin-h
 if(!customElements.get('garmin-hrv-card')){
   customElements.define('garmin-hrv-card',GarminHrvCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-hrv-card',name:'Garmin HRV Card',description:'Toont HRV status, baseline en historiek'});
+  window.customCards.push({type:'garmin-hrv-card',name:'Garmin HRV Card',description:'HRV status, baseline and history chart'});
   console.info('%c GARMIN-HRV-CARD %c loaded ','background:#3a5fc8;color:white;','');
 }
 const TRAINING_ENTITY_SUFFIXES = {
@@ -1182,7 +1182,7 @@ if (!customElements.get('garmin-training-card-editor')) customElements.define('g
 if (!customElements.get('garmin-training-card')) {
   customElements.define('garmin-training-card',GarminTrainingCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-training-card',name:'Garmin Training Card',description:'Trainingsgereedheid, VO2max, status en scores'});
+  window.customCards.push({type:'garmin-training-card',name:'Garmin Training Card',description:'Training readiness, VO2max, training status and scores'});
   console.info('%c GARMIN-TRAINING-CARD %c loaded ','background:#2d5bff;color:white;','');
 }
 const BODY_ENTITY_SUFFIXES = {
@@ -1391,7 +1391,7 @@ if (!customElements.get('garmin-body-card-editor')) customElements.define('garmi
 if (!customElements.get('garmin-body-card')) {
   customElements.define('garmin-body-card',GarminBodyCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-body-card',name:'Garmin Body Card',description:'Body battery, lichaamssamenstelling en fitnessleeftijd'});
+  window.customCards.push({type:'garmin-body-card',name:'Garmin Body Card',description:'Body battery history, body composition and fitness age'});
   console.info('%c GARMIN-BODY-CARD %c loaded ','background:#6bcb77;color:white;','');
 }
 const SUMMARY_ENTITY_SUFFIXES = {
@@ -1576,6 +1576,6 @@ if (!customElements.get('garmin-activity-summary-card-editor')) customElements.d
 if (!customElements.get('garmin-activity-summary-card')) {
   customElements.define('garmin-activity-summary-card',GarminActivitySummaryCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-activity-summary-card',name:'Garmin Activity Summary Card',description:'Stappen, intensiteitsminuten en calorieën'});
+  window.customCards.push({type:'garmin-activity-summary-card',name:'Garmin Activity Summary Card',description:'Steps, intensity minutes and calories'});
   console.info('%c GARMIN-ACTIVITY-SUMMARY-CARD %c loaded ','background:#ffd166;color:#333;','');
 }
