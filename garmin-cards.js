@@ -568,8 +568,8 @@ class GarminActivityCard extends HTMLElement {
     this._addTileLayer();
     this._polyline=L.polyline(coordinates,{color:this._config.color,weight:this._config.weight,opacity:0.8}).addTo(this._map);
     setTimeout(()=>{ try{ if(this._map&&this._polyline){this._map.invalidateSize();this._map.fitBounds(this._polyline.getBounds(),{padding:[20,20]});}}catch(_e){ /* ignore */ }},50);
-    L.circleMarker(coordinates[0],{radius:8,color:'#4CAF50',fillColor:'#4CAF50',fillOpacity:1}).addTo(this._map).bindPopup(t(hass,'start'));
-    L.circleMarker(coordinates[coordinates.length-1],{radius:8,color:'#F44336',fillColor:'#F44336',fillOpacity:1}).addTo(this._map).bindPopup(t(hass,'end'));
+    L.circleMarker(coordinates[0],{radius:8,color:'#4CAF50',fillColor:'#4CAF50',fillOpacity:1}).addTo(this._map).bindPopup(t(this._hass,'start'));
+    L.circleMarker(coordinates[coordinates.length-1],{radius:8,color:'#F44336',fillColor:'#F44336',fillOpacity:1}).addTo(this._map).bindPopup(t(this._hass,'end'));
   }
 
   async _fetchMapTilesToken() {
