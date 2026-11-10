@@ -615,10 +615,10 @@ const SLEEP_ENTITY_SUFFIXES = {
 function sleepEntityPrefix(entityId) {
   if (!entityId) return null;
   for (const suffix of Object.values(SLEEP_ENTITY_SUFFIXES)) {
-    const m = entityId.match(new RegExp(`^(sensor\\.garmin_connect(?:_\\d+)?)_${suffix}$`));
+    const m = entityId.match(new RegExp(`^(sensor\\.(?:\\w+_)?garmin_connect(?:_\\w+)?)_${suffix}$`));
     if (m) return m[1];
   }
-  const m = entityId.match(/^(sensor\.garmin_connect(?:_\d+)?)_/);
+  const m = entityId.match(/^(sensor\.(?:\w+_)?garmin_connect(?:_\w+)?)_/);
   return m ? m[1] : null;
 }
 
@@ -789,10 +789,10 @@ const HRV_ENTITY_SUFFIXES = {
 function hrvEntityPrefix(entityId) {
   if (!entityId) return null;
   for (const suffix of Object.values(HRV_ENTITY_SUFFIXES)) {
-    const m=entityId.match(new RegExp(`^(sensor\\.garmin_connect(?:_\\d+)?)_${suffix}$`));
+    const m=entityId.match(new RegExp(`^(sensor\\.(?:\\w+_)?garmin_connect(?:_\\w+)?)_${suffix}$`));
     if (m) return m[1];
   }
-  const m=entityId.match(/^(sensor\.garmin_connect(?:_\d+)?)_/);
+  const m=entityId.match(/^(sensor\.(?:\w+_)?garmin_connect(?:_\w+)?)_/);
   return m?m[1]:null;
 }
 
@@ -973,10 +973,10 @@ const TRAINING_STATUS_NL = {
 function trainingEntityPrefix(entityId) {
   if (!entityId) return null;
   for (const suffix of Object.values(TRAINING_ENTITY_SUFFIXES)) {
-    const m = entityId.match(new RegExp(`^(sensor\\.garmin_connect(?:_\\d+)?)_${suffix}$`));
+    const m = entityId.match(new RegExp(`^(sensor\\.(?:\\w+_)?garmin_connect(?:_\\w+)?)_${suffix}$`));
     if (m) return m[1];
   }
-  const m = entityId.match(/^(sensor\.garmin_connect(?:_\d+)?)_/);
+  const m = entityId.match(/^(sensor\.(?:\w+_)?garmin_connect(?:_\w+)?)_/);
   return m ? m[1] : null;
 }
 
@@ -1207,10 +1207,10 @@ const BODY_ENTITY_SUFFIXES = {
 function bodyEntityPrefix(entityId) {
   if (!entityId) return null;
   for (const suffix of Object.values(BODY_ENTITY_SUFFIXES)) {
-    const m = entityId.match(new RegExp(`^(sensor\\.garmin_connect(?:_\\d+)?)_${suffix}$`));
+    const m = entityId.match(new RegExp(`^(sensor\\.(?:\\w+_)?garmin_connect(?:_\\w+)?)_${suffix}$`));
     if (m) return m[1];
   }
-  const m = entityId.match(/^(sensor\.garmin_connect(?:_\d+)?)_/);
+  const m = entityId.match(/^(sensor\.(?:\w+_)?garmin_connect(?:_\w+)?)_/);
   return m ? m[1] : null;
 }
 
@@ -1414,10 +1414,10 @@ const SUMMARY_ENTITY_SUFFIXES = {
 function summaryEntityPrefix(entityId) {
   if (!entityId) return null;
   for (const suffix of Object.values(SUMMARY_ENTITY_SUFFIXES)) {
-    const m = entityId.match(new RegExp(`^(sensor\\.garmin_connect(?:_\\d+)?)_${suffix}$`));
+    const m = entityId.match(new RegExp(`^(sensor\\.(?:\\w+_)?garmin_connect(?:_\\w+)?)_${suffix}$`));
     if (m) return m[1];
   }
-  const m = entityId.match(/^(sensor\.garmin_connect(?:_\d+)?)_/);
+  const m = entityId.match(/^(sensor\.(?:\w+_)?garmin_connect(?:_\w+)?)_/);
   return m ? m[1] : null;
 }
 
