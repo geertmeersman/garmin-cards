@@ -607,11 +607,49 @@ class GarminActivityCard extends HTMLElement {
   static getStubConfig() { return {entity:'sensor.garmin_connect_last_activity',title:'Laatste activiteit'}; }
 }
 
-if (!customElements.get('garmin-activity-card-editor')) customElements.define('garmin-activity-card-editor',GarminActivityCardEditor);
+// ── Entity suggestion helper ─────────────────────────────────────────────────
+function garminEntitySuggestion(hass, entityId, cardType, titleKey, entitySuffix) {
+  if (!entityId.startsWith('sensor.')) return null;
+  if (!entityId.includes('garmin_connect')) return null;
+  const knownSuffixes = [
+    'last_activity', 'connected_sensors',
+    'sleep_score', 'deep_sleep_duration', 'light_sleep_duration', 'rem_sleep_duration',
+    'awake_sleep_duration', 'total_sleep_duration', 'bedtime', 'wake_time',
+    'hrv_last_night_average', 'avg_spo2', 'avg_sleep_respiration',
+    'body_battery_most_recent', 'resting_heart_rate',
+    'hrv_status', 'hrv_weekly_average', 'hrv_last_night_average',
+    'hrv_last_night_5_min_high', 'hrv_baseline',
+    'training_readiness', 'morning_training_readiness', 'recovery_time',
+    'training_status', 'vo2max_cycling', 'vo2max_running',
+    'lactate_threshold_heart_rate', 'endurance_score', 'hill_score',
+    'body_battery', 'weight', 'bmi', 'body_fat_percentage',
+    'body_water_percentage', 'muscle_mass', 'bone_mass', 'fitness_age',
+    'steps', 'steps_goal', 'intensity_minutes_goal',
+    'moderate_intensity_minutes', 'vigorous_intensity_minutes',
+    'active_calories', 'bmr_calories', 'total_calories',
+    'active_time', 'sedentary_time',
+    '7_day_average_resting_heart_rate',
+  ].sort((a,b) => b.length - a.length);
+  let prefix = null;
+  for (const suffix of knownSuffixes) {
+    if (entityId.endsWith('_' + suffix)) {
+      prefix = entityId.slice(0, -(suffix.length + 1));
+      break;
+    }
+  }
+  if (!prefix) return null;
+  const lang = (hass?.locale?.language || 'en').slice(0, 2).toLowerCase();
+  const title = (TRANSLATIONS[lang]?.[titleKey]) ?? EN_TRANSLATIONS[titleKey] ?? titleKey;
+  const entity = `${prefix}_${entitySuffix}`;
+  return [{ label: title, config: { type: `custom:${cardType}`, entity, title } }];
+}
+
+customElements.define('garmin-activity-card-editor',GarminActivityCardEditor);
 if (!customElements.get('garmin-activity-card')) {
   customElements.define('garmin-activity-card',GarminActivityCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-activity-card',name:'Garmin Activity Card',description:'Last activity with route map, stats, power and HR/power zones'});
+  window.customCards.push({type:'garmin-activity-card',name:'Garmin Activity Card',description:'Last activity with route map, stats, power and HR/power zones',
+    getEntitySuggestion:(hass,entityId)=>garminEntitySuggestion(hass,entityId,'garmin-activity-card','activity','last_activity')});
   console.info('%c GARMIN-ACTIVITY-CARD %c v'+VERSION+' ','background:#2d5bff;color:white;','');
 }
 const SLEEP_COLORS = { deep:'#3a5fc8', light:'#6ec6f5', rem:'#9b59b6', awake:'#f4845f' };
@@ -787,7 +825,8 @@ if (!customElements.get('garmin-sleep-card-editor')) customElements.define('garm
 if (!customElements.get('garmin-sleep-card')) {
   customElements.define('garmin-sleep-card',GarminSleepCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-sleep-card',name:'Garmin Sleep Card',description:'Sleep score, stages, HRV, SpO2, respiration and body battery'});
+  window.customCards.push({type:'garmin-sleep-card',name:'Garmin Sleep Card',description:'Sleep score, stages, HRV, SpO2, respiration and body battery',
+    getEntitySuggestion:(hass,entityId)=>garminEntitySuggestion(hass,entityId,'garmin-sleep-card','sleep_score','sleep_score')});
   console.info('%c GARMIN-SLEEP-CARD %c v'+VERSION+' ','background:#3a5fc8;color:white;','');
 }
 const HRV_STATUS_NL = { balanced:'Gebalanceerd', low:'Laag', unbalanced:'Ongebalanceerd', poor:'Slecht', unknown:'Onbekend' };
@@ -952,7 +991,8 @@ if(!customElements.get('garmin-hrv-card-editor'))customElements.define('garmin-h
 if(!customElements.get('garmin-hrv-card')){
   customElements.define('garmin-hrv-card',GarminHrvCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-hrv-card',name:'Garmin HRV Card',description:'HRV status, baseline and history chart'});
+  window.customCards.push({type:'garmin-hrv-card',name:'Garmin HRV Card',description:'HRV status, baseline and history chart',
+    getEntitySuggestion:(hass,entityId)=>garminEntitySuggestion(hass,entityId,'garmin-hrv-card','hrv_status','hrv_status')});
   console.info('%c GARMIN-HRV-CARD %c v'+VERSION+' ','background:#3a5fc8;color:white;','');
 }
 const TRAINING_ENTITY_SUFFIXES = {
@@ -1195,7 +1235,8 @@ if (!customElements.get('garmin-training-card-editor')) customElements.define('g
 if (!customElements.get('garmin-training-card')) {
   customElements.define('garmin-training-card',GarminTrainingCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-training-card',name:'Garmin Training Card',description:'Training readiness, VO2max, training status and scores'});
+  window.customCards.push({type:'garmin-training-card',name:'Garmin Training Card',description:'Training readiness, VO2max, training status and scores',
+    getEntitySuggestion:(hass,entityId)=>garminEntitySuggestion(hass,entityId,'garmin-training-card','training_readiness','training_readiness')});
   console.info('%c GARMIN-TRAINING-CARD %c v'+VERSION+' ','background:#2d5bff;color:white;','');
 }
 const BODY_ENTITY_SUFFIXES = {
@@ -1404,7 +1445,8 @@ if (!customElements.get('garmin-body-card-editor')) customElements.define('garmi
 if (!customElements.get('garmin-body-card')) {
   customElements.define('garmin-body-card',GarminBodyCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-body-card',name:'Garmin Body Card',description:'Body battery history, body composition and fitness age'});
+  window.customCards.push({type:'garmin-body-card',name:'Garmin Body Card',description:'Body battery history, body composition and fitness age',
+    getEntitySuggestion:(hass,entityId)=>garminEntitySuggestion(hass,entityId,'garmin-body-card','body_battery','body_battery')});
   console.info('%c GARMIN-BODY-CARD %c v'+VERSION+' ','background:#6bcb77;color:white;','');
 }
 const SUMMARY_ENTITY_SUFFIXES = {
@@ -1589,7 +1631,8 @@ if (!customElements.get('garmin-activity-summary-card-editor')) customElements.d
 if (!customElements.get('garmin-activity-summary-card')) {
   customElements.define('garmin-activity-summary-card',GarminActivitySummaryCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-activity-summary-card',name:'Garmin Activity Summary Card',description:'Steps, intensity minutes and calories'});
+  window.customCards.push({type:'garmin-activity-summary-card',name:'Garmin Activity Summary Card',description:'Steps, intensity minutes and calories',
+    getEntitySuggestion:(hass,entityId)=>garminEntitySuggestion(hass,entityId,'garmin-activity-summary-card','steps','steps')});
   console.info('%c GARMIN-ACTIVITY-SUMMARY-CARD %c v'+VERSION+' ','background:#ffd166;color:#333;','');
 }
 
@@ -1743,6 +1786,7 @@ if(!customElements.get('garmin-sensors-card-editor'))customElements.define('garm
 if(!customElements.get('garmin-sensors-card')){
   customElements.define('garmin-sensors-card',GarminSensorsCard);
   window.customCards=window.customCards||[];
-  window.customCards.push({type:'garmin-sensors-card',name:'Garmin Sensors Card',description:'Connected Garmin sensors with battery status'});
+  window.customCards.push({type:'garmin-sensors-card',name:'Garmin Sensors Card',description:'Connected Garmin sensors with battery status',
+    getEntitySuggestion:(hass,entityId)=>garminEntitySuggestion(hass,entityId,'garmin-sensors-card','sensors_title','connected_sensors')});
   console.info('%c GARMIN-SENSORS-CARD %c v'+VERSION+' ','background:#3a5fc8;color:white;','');
 }
