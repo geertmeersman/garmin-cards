@@ -1,1 +1,7 @@
-{"name": "Garmin Cards", "description": "Lovelace cards for the Garmin Connect integration", "filename": "garmin-cards.js"}
+{
+  "name": "Garmin Cards",
+  "description": "Lovelace cards for the Garmin Connect integration",
+  "filename": "garmin-cards.js",
+  "content_in_root": true,
+  "homeassistant": "2024.1.0"
+}
