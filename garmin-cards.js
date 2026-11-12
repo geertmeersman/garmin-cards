@@ -1580,3 +1580,156 @@ if (!customElements.get('garmin-activity-summary-card')) {
   window.customCards.push({type:'garmin-activity-summary-card',name:'Garmin Activity Summary Card',description:'Steps, intensity minutes and calories'});
   console.info('%c GARMIN-ACTIVITY-SUMMARY-CARD %c v'+VERSION+' ','background:#ffd166;color:#333;','');
 }
+
+const SENSOR_TYPE_ICON = {
+  HEART_RATE: 'mdi:heart-pulse',
+  BIKE_SPEED: 'mdi:speedometer',
+  BIKE_POWER: 'mdi:lightning-bolt',
+  BIKE_RADAR: 'mdi:radar',
+  SHIFTING: 'mdi:cog-transfer',
+  ANTFS: 'mdi:antenna',
+  BIKE_CADENCE: 'mdi:rotate-right',
+  RUNNING_DYNAMICS: 'mdi:run',
+};
+
+const BATTERY_STATUS_COLOR = {
+  CRITICAL: 'var(--error-color,#e05c6a)',
+  LOW: 'var(--warning-color,#e0956a)',
+  GOOD: 'var(--success-color,#43a047)',
+  OK: 'var(--success-color,#43a047)',
+  NEW: '#3a5fc8',
+  UNKNOWN: 'var(--secondary-text-color)',
+};
+
+const BATTERY_STATUS_ICON = {
+  CRITICAL: 'mdi:battery-alert',
+  LOW: 'mdi:battery-low',
+  GOOD: 'mdi:battery-medium',
+  OK: 'mdi:battery-high',
+  NEW: 'mdi:battery',
+  UNKNOWN: 'mdi:battery-unknown',
+};
+
+class GarminSensorsCardEditor extends HTMLElement {
+  constructor(){super();this.attachShadow({mode:'open'});this._config={};this._hass=null;}
+  set hass(hass){this._hass=hass;const s=this.shadowRoot.getElementById('entity');if(s)s.hass=hass;}
+  setConfig(config){this._config={...config};this._render();}
+
+  _render() {
+    const c=this._config;
+    this.shadowRoot.innerHTML = editorStyles() + `
+      <div class="editor">
+        <div><label>Sensor entiteit</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>Titel</label><input id="title" type="text" value="${c.title||'Sensoren'}" /></div>
+        <div class="toggle-row"><span class="toggle-label">Enkel lage/kritieke batterij</span><ha-switch id="only_low" ${c.only_low?'checked':''}></ha-switch></div>
+      </div>`;
+    const sel=this.shadowRoot.getElementById('entity');
+    sel.hass=this._hass; sel.selector={entity:{integration:'garmin_connect',domain:'sensor'}}; sel.value=c.entity||''; sel.label='Entiteit';
+    sel.addEventListener('value-changed',e=>{this._config={...this._config,entity:e.detail.value};this._fireChange();});
+    this.shadowRoot.getElementById('title').addEventListener('input',e=>{this._config={...this._config,title:e.target.value};this._fireChange();});
+    this.shadowRoot.getElementById('only_low').addEventListener('change',e=>{this._config={...this._config,only_low:e.target.checked};this._fireChange();});
+  }
+
+  _fireChange(){this.dispatchEvent(new CustomEvent('config-changed',{detail:{config:this._config}}));}
+}
+
+class GarminSensorsCard extends HTMLElement {
+  constructor(){super();this.attachShadow({mode:'open'});this._hass=null;this._config=null;this._lastChanged=null;}
+
+  setConfig(config){
+    if(!config.entity)throw new Error('entity is required');
+    this._config={title:'Sensoren',...config};
+  }
+
+  set hass(hass){
+    this._hass=hass;
+    if(!this._config)return;
+    const changed=hass.states[this._config.entity]?.last_changed;
+    if(changed===this._lastChanged)return;
+    this._lastChanged=changed;
+    this._render();
+  }
+
+  connectedCallback(){if(this._hass&&this._config){this._lastChanged=null;this._render();}}
+
+  _render(){
+    const hass=this._hass, cfg=this._config;
+    const state=hass.states[cfg.entity];
+    const sensors=(state?.attributes?.sensors||[]).filter(s=>s.deviceName);
+    const lowStatuses=['CRITICAL','LOW'];
+    const filteredSensors=cfg.only_low
+      ? sensors.filter(s=>lowStatuses.includes(s.batteryStatus))
+      : sensors;
+
+    // group by deviceName
+    const groups={};
+    for(const s of filteredSensors){
+      const key=s.deviceName||'Onbekend';
+      if(!groups[key])groups[key]=[];
+      groups[key].push(s);
+    }
+
+    const rows=Object.entries(groups).map(([name,items])=>{
+      const sensorRows=items.map(s=>{
+        const icon=SENSOR_TYPE_ICON[s.sensorType]||'mdi:bluetooth';
+        const batColor=BATTERY_STATUS_COLOR[s.batteryStatus]||BATTERY_STATUS_COLOR.UNKNOWN;
+        const batIcon=BATTERY_STATUS_ICON[s.batteryStatus]||'mdi:battery-unknown';
+        const batLabel=s.batteryLevel!=null?`${s.batteryLevel}%`:s.batteryStatus||'—';
+        const lastConn=s.lastConnected?new Date(s.lastConnected).toLocaleString('nl-BE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+        const typeLabel=(s.sensorType||'').replace(/_/g,' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+        return `
+          <div class="sensor-row">
+            <ha-icon icon="${icon}" class="type-icon"></ha-icon>
+            <div class="sensor-info">
+              <span class="sensor-type">${typeLabel}</span>
+              <span class="sensor-last">Laatste verbinding: ${lastConn}</span>
+            </div>
+            <div class="battery" style="color:${batColor}">
+              <ha-icon icon="${batIcon}" style="--mdc-icon-size:16px;"></ha-icon>
+              <span>${batLabel}</span>
+            </div>
+          </div>`;
+      }).join('');
+
+      return `
+        <div class="group">
+          <div class="group-header">${name}</div>
+          ${sensorRows}
+        </div>`;
+    }).join('');
+
+    this.shadowRoot.innerHTML = `
+      <ha-card>
+        <div class="card-header"><ha-icon icon="mdi:bluetooth-connect"></ha-icon><span>${cfg.title}</span><span class="count">${filteredSensors.length}${cfg.only_low?'/'+sensors.length:''}</span></div>
+        <div class="content">${rows||'<div class="empty">Geen sensoren gevonden</div>'}</div>
+      </ha-card>
+      <style>
+        ha-card{overflow:hidden}
+        .card-header{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:14px;font-weight:500;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--divider-color)}
+        .count{margin-left:auto;background:var(--primary-color);color:white;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}
+        .group{border-bottom:1px solid var(--divider-color)}
+        .group:last-child{border-bottom:none}
+        .group-header{padding:8px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--primary-color);background:color-mix(in srgb,var(--primary-color) 8%,transparent)}
+        .sensor-row{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--divider-color)}
+        .sensor-row:first-of-type{border-top:none}
+        .type-icon{--mdc-icon-size:20px;color:var(--secondary-text-color);flex-shrink:0}
+        .sensor-info{flex:1;min-width:0}
+        .sensor-type{display:block;font-size:13px;font-weight:500;color:var(--primary-text-color)}
+        .sensor-last{display:block;font-size:11px;color:var(--secondary-text-color)}
+        .battery{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:600;flex-shrink:0}
+        .empty{padding:16px;text-align:center;color:var(--secondary-text-color);font-size:13px}
+      </style>`;
+  }
+
+  getCardSize(){return 5;}
+  static getConfigElement(){return document.createElement('garmin-sensors-card-editor');}
+  static getStubConfig(){return{entity:'sensor.garmin_connect_connected_sensors',title:'Sensoren'};}
+}
+
+if(!customElements.get('garmin-sensors-card-editor'))customElements.define('garmin-sensors-card-editor',GarminSensorsCardEditor);
+if(!customElements.get('garmin-sensors-card')){
+  customElements.define('garmin-sensors-card',GarminSensorsCard);
+  window.customCards=window.customCards||[];
+  window.customCards.push({type:'garmin-sensors-card',name:'Garmin Sensors Card',description:'Connected Garmin sensors with battery status'});
+  console.info('%c GARMIN-SENSORS-CARD %c v'+VERSION+' ','background:#3a5fc8;color:white;','');
+}
