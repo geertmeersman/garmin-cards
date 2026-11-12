@@ -16,6 +16,7 @@ A collection of Lovelace cards for [Home Assistant](https://www.home-assistant.i
 | `garmin-training-card` | Training | Readiness, VO2max, training status, endurance & hill score |
 | `garmin-body-card` | Body | Body battery history, weight, body composition, fitness age |
 | `garmin-activity-summary-card` | Daily activity | Steps, intensity minutes, calories |
+| `garmin-sensors-card` | Sensors | Connected Garmin sensors with battery status |
 
 ## Requirements
 
@@ -37,6 +38,8 @@ All cards have a visual editor. The `entity` field accepts any `sensor.garmin_co
 
 ### garmin-activity-card
 
+Displays the last recorded activity with a route map, statistics, power data and heart rate / power zones.
+
 ```yaml
 type: custom:garmin-activity-card
 entity: sensor.garmin_connect_last_activity
@@ -50,7 +53,21 @@ show_hr_zones: true
 show_pwr_zones: true
 ```
 
+| Option | Default | Description |
+|---|---|---|
+| `entity` | required | Any `sensor.garmin_connect_*` sensor |
+| `title` | `Laatste activiteit` | Card title |
+| `map_height` | `300px` | Height of the route map |
+| `color` | `#2d5bff` | Accent color for the route and icons |
+| `show_map` | `true` | Show route map |
+| `show_stats` | `true` | Show activity statistics |
+| `show_power` | `true` | Show power data (avg, max, normalized) |
+| `show_hr_zones` | `true` | Show heart rate zones |
+| `show_pwr_zones` | `true` | Show power zones |
+
 ### garmin-sleep-card
+
+Displays sleep score, sleep stages, and vitals (HRV, SpO2, respiration, body battery).
 
 ```yaml
 type: custom:garmin-sleep-card
@@ -61,7 +78,17 @@ show_stages: true
 show_vitals: true
 ```
 
+| Option | Default | Description |
+|---|---|---|
+| `entity` | required | Any `sensor.garmin_connect_*` sensor |
+| `title` | `Slaap` | Card title |
+| `show_score` | `true` | Show sleep score, bedtime and wake time |
+| `show_stages` | `true` | Show sleep stages (deep, light, REM, awake) |
+| `show_vitals` | `true` | Show HRV, resting HR, SpO2, respiration, body battery |
+
 ### garmin-hrv-card
+
+Displays HRV status, baseline, nightly stats and a history chart.
 
 ```yaml
 type: custom:garmin-hrv-card
@@ -73,7 +100,18 @@ show_stats: true
 show_history: true
 ```
 
+| Option | Default | Description |
+|---|---|---|
+| `entity` | required | Any `sensor.garmin_connect_*` sensor |
+| `title` | `HRV` | Card title |
+| `history_days` | `30` | Number of days to show in the history chart |
+| `show_status` | `true` | Show HRV status and baseline |
+| `show_stats` | `true` | Show last night, weekly average and 5-min peak |
+| `show_history` | `true` | Show history chart |
+
 ### garmin-training-card
+
+Displays training readiness, VO2max, training status and scores.
 
 ```yaml
 type: custom:garmin-training-card
@@ -85,7 +123,18 @@ show_status: true
 show_scores: true
 ```
 
+| Option | Default | Description |
+|---|---|---|
+| `entity` | required | Any `sensor.garmin_connect_*` sensor |
+| `title` | `Training` | Card title |
+| `show_readiness` | `true` | Show training readiness, morning readiness and recovery time |
+| `show_vo2max` | `true` | Show VO2max (running & cycling) and lactate threshold |
+| `show_status` | `true` | Show training status |
+| `show_scores` | `true` | Show endurance score and hill score |
+
 ### garmin-body-card
+
+Displays body battery history, body composition and fitness age.
 
 ```yaml
 type: custom:garmin-body-card
@@ -97,7 +146,18 @@ show_composition: true
 show_fitness_age: true
 ```
 
+| Option | Default | Description |
+|---|---|---|
+| `entity` | required | Any `sensor.garmin_connect_*` sensor |
+| `title` | `Lichaam` | Card title |
+| `history_days` | `14` | Number of days to show in the body battery history chart |
+| `show_body_battery` | `true` | Show body battery with history chart |
+| `show_composition` | `true` | Show body composition (weight, BMI, fat, water, muscle, bone) |
+| `show_fitness_age` | `true` | Show fitness age, achievable age and calendar age |
+
 ### garmin-activity-summary-card
+
+Displays daily steps, intensity minutes and calories.
 
 ```yaml
 type: custom:garmin-activity-summary-card
@@ -107,3 +167,37 @@ show_steps: true
 show_intensity: true
 show_calories: true
 ```
+
+| Option | Default | Description |
+|---|---|---|
+| `entity` | required | Any `sensor.garmin_connect_*` sensor |
+| `title` | `Dagelijkse activiteit` | Card title |
+| `show_steps` | `true` | Show steps with goal progress bar and distance |
+| `show_intensity` | `true` | Show intensity minutes (total, moderate, vigorous) with progress bar |
+| `show_calories` | `true` | Show active calories, BMR, total calories, active time and sedentary time |
+
+### garmin-sensors-card
+
+Displays all connected Garmin sensors (heart rate monitor, bike sensors, etc.) with battery status, grouped by device.
+
+```yaml
+type: custom:garmin-sensors-card
+entity: sensor.garmin_connect_connected_sensors
+title: Sensoren
+only_low: false
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `entity` | required | `sensor.garmin_connect_connected_sensors` |
+| `title` | `Sensors` | Card title |
+| `only_low` | `false` | Show only sensors with low or critical battery |
+
+## Supported languages
+
+All cards support the following languages via the Home Assistant locale setting:
+
+- 🇳🇱 Dutch (nl)
+- 🇫🇷 French (fr)
+- 🇩🇪 German (de)
+- 🇬🇧 English (en) — default
