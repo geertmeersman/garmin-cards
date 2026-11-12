@@ -24,13 +24,15 @@ A collection of Lovelace cards for [Home Assistant](https://www.home-assistant.i
 
 ## Installation via HACS
 
-1. Go to HACS → Frontend
-2. Click ⋮ → Custom repositories
-3. Add: `https://github.com/geertmeersman/garmin-cards`
-4. Category: `Lovelace`
-5. Install "Garmin Cards"
-
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=geertmeersman&repository=garmin-cards&category=lovelace)
+
+Or add it manually:
+
+1. Go to **Settings → Marketplace**
+2. Click **Add from link** (top right)
+3. Enter `https://github.com/geertmeersman/garmin-cards`
+4. Select **Dashboard** as content type if not detected automatically
+5. Click **Add** and install
 
 ## Configuration
 
