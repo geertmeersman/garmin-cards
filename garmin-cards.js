@@ -150,6 +150,9 @@ const TRANSLATIONS = {
     show_body_battery: 'Body battery', show_composition: 'Lichaamssamenstelling',
     show_fitness_age: 'Fitnessleeftijd', show_steps: 'Stappen',
     show_intensity: 'Intensiteitsminuten', show_calories: 'Calorieën & activiteit',
+    sensors_title: 'Sensoren', sensors_only_low: 'Enkel lage/kritieke batterij',
+    sensors_last_conn: 'Laatste verbinding', sensors_none: 'Geen sensoren gevonden',
+    sensors_entity_label: 'Sensor entiteit',
   },
   fr: {
     no_data: 'Aucune donnée disponible', no_route: 'Aucune donnée de route',
@@ -196,6 +199,9 @@ const TRANSLATIONS = {
     show_body_battery: 'Batterie corporelle', show_composition: 'Composition corporelle',
     show_fitness_age: 'Âge fitness', show_steps: 'Pas',
     show_intensity: "Minutes d'intensité", show_calories: 'Calories & activité',
+    sensors_title: 'Capteurs', sensors_only_low: 'Seulement batterie faible/critique',
+    sensors_last_conn: 'Dernière connexion', sensors_none: 'Aucun capteur trouvé',
+    sensors_entity_label: 'Entité capteur',
   },
   de: {
     no_data: 'Keine Daten verfügbar', no_route: 'Keine Routendaten',
@@ -242,6 +248,9 @@ const TRANSLATIONS = {
     show_body_battery: 'Body Battery', show_composition: 'Körperzusammensetzung',
     show_fitness_age: 'Fitnessalter', show_steps: 'Schritte',
     show_intensity: 'Intensitätsminuten', show_calories: 'Kalorien & Aktivität',
+    sensors_title: 'Sensoren', sensors_only_low: 'Nur niedrige/kritische Batterie',
+    sensors_last_conn: 'Letzte Verbindung', sensors_none: 'Keine Sensoren gefunden',
+    sensors_entity_label: 'Sensor-Entität',
   },
 };
 
@@ -290,6 +299,9 @@ const EN_TRANSLATIONS = {
   show_body_battery: 'Body battery', show_composition: 'Body composition',
   show_fitness_age: 'Fitness age', show_steps: 'Steps',
   show_intensity: 'Intensity minutes', show_calories: 'Calories & activity',
+  sensors_title: 'Sensors', sensors_only_low: 'Only low/critical battery',
+  sensors_last_conn: 'Last connection', sensors_none: 'No sensors found',
+  sensors_entity_label: 'Sensor entity',
 };
 
 function t(hass, key) {
@@ -1619,9 +1631,9 @@ class GarminSensorsCardEditor extends HTMLElement {
     const c=this._config;
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
-        <div><label>Sensor entiteit</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>Titel</label><input id="title" type="text" value="${c.title||'Sensoren'}" /></div>
-        <div class="toggle-row"><span class="toggle-label">Enkel lage/kritieke batterij</span><ha-switch id="only_low" ${c.only_low?'checked':''}></ha-switch></div>
+        <div><label>${t(this._hass,'sensors_entity_label')}</label><ha-selector id="entity"></ha-selector></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${c.title||t(this._hass,'sensors_title')}" /></div>
+        <div class="toggle-row"><span class="toggle-label">${t(this._hass,'sensors_only_low')}</span><ha-switch id="only_low" ${c.only_low?'checked':''}></ha-switch></div>
       </div>`;
     const sel=this.shadowRoot.getElementById('entity');
     sel.hass=this._hass; sel.selector={entity:{integration:'garmin_connect',domain:'sensor'}}; sel.value=c.entity||''; sel.label='Entiteit';
@@ -1638,7 +1650,7 @@ class GarminSensorsCard extends HTMLElement {
 
   setConfig(config){
     if(!config.entity)throw new Error('entity is required');
-    this._config={title:'Sensoren',...config};
+    this._config={title:'',...config};
   }
 
   set hass(hass){
@@ -1654,6 +1666,7 @@ class GarminSensorsCard extends HTMLElement {
 
   _render(){
     const hass=this._hass, cfg=this._config;
+    const title=cfg.title||t(hass,'sensors_title');
     const state=hass.states[cfg.entity];
     const sensors=(state?.attributes?.sensors||[]).filter(s=>s.deviceName);
     const lowStatuses=['CRITICAL','LOW'];
@@ -1682,7 +1695,7 @@ class GarminSensorsCard extends HTMLElement {
             <ha-icon icon="${icon}" class="type-icon"></ha-icon>
             <div class="sensor-info">
               <span class="sensor-type">${typeLabel}</span>
-              <span class="sensor-last">Laatste verbinding: ${lastConn}</span>
+              <span class="sensor-last">${t(hass,'sensors_last_conn')}: ${lastConn}</span>
             </div>
             <div class="battery" style="color:${batColor}">
               <ha-icon icon="${batIcon}" style="--mdc-icon-size:16px;"></ha-icon>
@@ -1700,8 +1713,8 @@ class GarminSensorsCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="mdi:bluetooth-connect"></ha-icon><span>${cfg.title}</span><span class="count">${filteredSensors.length}${cfg.only_low?'/'+sensors.length:''}</span></div>
-        <div class="content">${rows||'<div class="empty">Geen sensoren gevonden</div>'}</div>
+        <div class="card-header"><ha-icon icon="mdi:bluetooth-connect"></ha-icon><span>${title}</span><span class="count">${filteredSensors.length}${cfg.only_low?'/'+sensors.length:''}</span></div>
+        <div class="content">${rows||`<div class="empty">${t(hass,'sensors_none')}</div>`}</div>
       </ha-card>
       <style>
         ha-card{overflow:hidden}
