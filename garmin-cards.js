@@ -4,6 +4,12 @@ const VERSION = "0.1.0";
 // Kaarten: activity, sleep, hrv, training, body, activity-summary
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ── HTML escape helper ───────────────────────────────────────────────────────
+function esc(v) {
+  if (v == null) return '';
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ── Map tiles ─────────────────────────────────────────────────────────────────
 const MAP_TILES_RASTER_PATH = '/api/map_tiles/raster/{z}/{x}/{y}.png?token={token}';
 const MAP_TILES_TOKEN_REFRESH_MS = 20 * 60 * 1000;
@@ -400,9 +406,9 @@ class GarminActivityCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Laatste activiteit')}" /></div>
-        <div class="field"><label>${t(this._hass,'map_height_label')}</label><input id="map_height" type="text" value="${v('map_height','300px')}" /></div>
-        <div class="field"><label>${t(this._hass,'color_label')}</label><input id="color" type="text" value="${v('color','#2d5bff')}" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${esc(v('title','Laatste activiteit'))}" /></div>
+        <div class="field"><label>${t(this._hass,'map_height_label')}</label><input id="map_height" type="text" value="${esc(v('map_height','300px'))}" /></div>
+        <div class="field"><label>${t(this._hass,'color_label')}</label><input id="color" type="text" value="${esc(v('color','#2d5bff'))}" /></div>
         <div class="section-header">Secties</div>
         ${renderToggle('show_map',      'Kaart',           v('show_map',true))}
         ${renderToggle('show_stats',    'Statistieken',    v('show_stats',true))}
@@ -477,7 +483,7 @@ class GarminActivityCard extends HTMLElement {
     const activityName = activityState?.state || attrs.activityName || 'Activiteit';
     const activityType = attrs.activityType || '';
     const cycling      = isCycling(activityType);
-    const color        = cfg.color;
+    const color        = esc(cfg.color);
     const typeLabel    = translateActivityType(activityType);
 
     const statsHtml = cfg.show_stats !== false ? `
@@ -515,13 +521,13 @@ class GarminActivityCard extends HTMLElement {
     const polylineData = routeState?.attributes?.polyline;
     const hasRoute = Array.isArray(polylineData)&&polylineData.length>0;
     const mapSection = cfg.show_map===false ? '' : hasRoute
-      ? `<div id="map" style="height:${cfg.map_height};width:100%;"></div>`
+      ? `<div id="map" style="height:${esc(cfg.map_height)};width:100%;"></div>`
       : `<div class="no-route">${t(hass,'no_route')}</div>`;
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="${activityIcon(activityType)}"></ha-icon><span>${cfg.title}</span></div>
-        <div class="activity-name">${activityName}${typeLabel?' · '+typeLabel:''}</div>
+        <div class="card-header"><ha-icon icon="${activityIcon(activityType)}"></ha-icon><span>${esc(cfg.title)}</span></div>
+        <div class="activity-name">${esc(activityName)}${typeLabel?' · '+esc(typeLabel):''}</div>
         ${mapSection}${statsHtml}${powerHtml}${hrZonesHtml}${pwZonesHtml}
       </ha-card>
       <link rel="stylesheet" href="/garmin_connect/leaflet.css" />
@@ -529,7 +535,7 @@ class GarminActivityCard extends HTMLElement {
         ha-card{overflow:hidden}
         .card-header{display:flex;align-items:center;gap:8px;padding:12px 16px 0;font-size:14px;font-weight:500;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:.05em}
         .activity-name{padding:4px 16px 10px;font-size:16px;font-weight:600;color:var(--primary-text-color)}
-        .no-route{height:${cfg.map_height};display:flex;align-items:center;justify-content:center;color:var(--secondary-text-color);font-size:14px}
+        .no-route{height:${esc(cfg.map_height)};display:flex;align-items:center;justify-content:center;color:var(--secondary-text-color);font-size:14px}
         .section-title{padding:10px 16px 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--secondary-text-color);border-top:1px solid var(--divider-color)}
         .stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--divider-color)}
         .power-stats{grid-template-columns:repeat(3,1fr);border-top:none}
@@ -697,7 +703,7 @@ class GarminSleepCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Slaap')}" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${esc(v('title','Slaap'))}" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_score',  'Score & tijden')}
         ${toggle('show_stages', t(this._hass,'show_stages'))}
@@ -781,7 +787,7 @@ class GarminSleepCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="mdi:sleep"></ha-icon><span>${cfg.title}</span></div>
+        <div class="card-header"><ha-icon icon="mdi:sleep"></ha-icon><span>${esc(cfg.title)}</span></div>
         ${scoreSection}${stagesSection}${vitalsSection}
       </ha-card>
       <style>
@@ -864,8 +870,8 @@ class GarminHrvCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','HRV')}" /></div>
-        <div class="field"><label>${t(this._hass,'history_days_label')}</label><input id="history_days" type="number" value="${v('history_days',30)}" min="7" max="90" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${esc(v('title','HRV'))}" /></div>
+        <div class="field"><label>${t(this._hass,'history_days_label')}</label><input id="history_days" type="number" value="${esc(v('history_days',30))}" min="7" max="90" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_status',  'Status & baseline')}
         ${toggle('show_stats',   'Statistieken')}
@@ -939,7 +945,7 @@ class GarminHrvCard extends HTMLElement {
 
     const statusSection = cfg.show_status!==false ? `
       <div class="top">
-        <div class="status-badge" style="--s-color:${sColor}"><span class="status-val">${statusNl}</span><span class="status-sub">HRV Status</span></div>
+        <div class="status-badge" style="--s-color:${sColor}"><span class="status-val">${esc(statusNl)}</span><span class="status-sub">HRV Status</span></div>
         ${balancedLow!=null&&balancedUpper!=null?`<div class="baseline"><span class="baseline-label">Baseline</span><span class="baseline-range" style="color:${color}">${Math.round(balancedLow)}–${Math.round(balancedUpper)} ms</span>${lowUpper!=null?`<span class="baseline-low">min: ${Math.round(lowUpper)} ms</span>`:''}</div>`:''}
       </div>` : '';
 
@@ -956,7 +962,7 @@ class GarminHrvCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="mdi:heart-pulse"></ha-icon><span>${cfg.title}</span></div>
+        <div class="card-header"><ha-icon icon="mdi:heart-pulse"></ha-icon><span>${esc(cfg.title)}</span></div>
         ${statusSection}${statsSection}${historySection}
       </ha-card>
       <style>
@@ -1089,7 +1095,7 @@ class GarminTrainingCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Training')}" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${esc(v('title','Training'))}" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_readiness', t(this._hass,'show_readiness'))}
         ${toggle('show_vo2max',    'VO2max')}
@@ -1150,7 +1156,7 @@ class GarminTrainingCard extends HTMLElement {
         <div class="recovery-block">
           <span class="recovery-val">${fmtRecovery(recoveryHours)}</span>
           <span class="recovery-label">Hersteltijd</span>
-          ${readinessLevel ? `<span class="level-badge">${translateLevel(readinessLevel)}</span>` : ''}
+          ${readinessLevel ? `<span class="level-badge">${esc(translateLevel(readinessLevel))}</span>` : ''}
         </div>
       </div>` : '';
 
@@ -1179,7 +1185,7 @@ class GarminTrainingCard extends HTMLElement {
       <div class="section-title">${t(hass,'training_status')}</div>
       <div class="status-row">
         <div class="status-badge" style="--s-color:${sColor}">
-          <span class="status-val">${statusNl}</span>
+          <span class="status-val">${esc(statusNl)}</span>
         </div>
       </div>` : '';
 
@@ -1200,7 +1206,7 @@ class GarminTrainingCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="mdi:trophy-outline"></ha-icon><span>${cfg.title}</span></div>
+        <div class="card-header"><ha-icon icon="mdi:trophy-outline"></ha-icon><span>${esc(cfg.title)}</span></div>
         ${readinessSection}${vo2maxSection}${statusSection}${scoresSection}
       </ha-card>
       <style>
@@ -1284,8 +1290,8 @@ class GarminBodyCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Lichaam')}" /></div>
-        <div class="field"><label>Historiek body battery (dagen)</label><input id="history_days" type="number" value="${v('history_days',14)}" min="7" max="90" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${esc(v('title','Lichaam'))}" /></div>
+        <div class="field"><label>Historiek body battery (dagen)</label><input id="history_days" type="number" value="${esc(v('history_days',14))}" min="7" max="90" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_body_battery', t(this._hass,'show_body_battery'))}
         ${toggle('show_composition',  'Lichaamssamenstelling')}
@@ -1407,7 +1413,7 @@ class GarminBodyCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="mdi:human"></ha-icon><span>${cfg.title}</span></div>
+        <div class="card-header"><ha-icon icon="mdi:human"></ha-icon><span>${esc(cfg.title)}</span></div>
         ${bbSection}${compSection}${ageSection}
       </ha-card>
       <style>
@@ -1490,7 +1496,7 @@ class GarminActivitySummaryCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${v('title','Dagelijkse activiteit')}" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${esc(v('title','Dagelijkse activiteit'))}" /></div>
         <div class="section-header">Secties</div>
         ${toggle('show_steps',     'Stappen')}
         ${toggle('show_intensity', t(this._hass,'show_intensity'))}
@@ -1589,7 +1595,7 @@ class GarminActivitySummaryCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="mdi:shoe-sneaker"></ha-icon><span>${cfg.title}</span></div>
+        <div class="card-header"><ha-icon icon="mdi:shoe-sneaker"></ha-icon><span>${esc(cfg.title)}</span></div>
         ${stepsSection}${intensitySection}${calSection}
       </ha-card>
       <style>
@@ -1675,7 +1681,7 @@ class GarminSensorsCardEditor extends HTMLElement {
     this.shadowRoot.innerHTML = editorStyles() + `
       <div class="editor">
         <div><label>${t(this._hass,'sensors_entity_label')}</label><ha-selector id="entity"></ha-selector></div>
-        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${c.title||t(this._hass,'sensors_title')}" /></div>
+        <div class="field"><label>${t(this._hass,'title_label')}</label><input id="title" type="text" value="${esc(c.title||t(this._hass,'sensors_title'))}" /></div>
         <div class="toggle-row"><span class="toggle-label">${t(this._hass,'sensors_only_low')}</span><ha-switch id="only_low" ${c.only_low?'checked':''}></ha-switch></div>
       </div>`;
     const sel=this.shadowRoot.getElementById('entity');
@@ -1737,26 +1743,26 @@ class GarminSensorsCard extends HTMLElement {
           <div class="sensor-row">
             <ha-icon icon="${icon}" class="type-icon"></ha-icon>
             <div class="sensor-info">
-              <span class="sensor-type">${typeLabel}</span>
-              <span class="sensor-last">${t(hass,'sensors_last_conn')}: ${lastConn}</span>
+              <span class="sensor-type">${esc(typeLabel)}</span>
+              <span class="sensor-last">${t(hass,'sensors_last_conn')}: ${esc(lastConn)}</span>
             </div>
             <div class="battery" style="color:${batColor}">
               <ha-icon icon="${batIcon}" style="--mdc-icon-size:16px;"></ha-icon>
-              <span>${batLabel}</span>
+              <span>${esc(batLabel)}</span>
             </div>
           </div>`;
       }).join('');
 
       return `
         <div class="group">
-          <div class="group-header">${name}</div>
+          <div class="group-header">${esc(name)}</div>
           ${sensorRows}
         </div>`;
     }).join('');
 
     this.shadowRoot.innerHTML = `
       <ha-card>
-        <div class="card-header"><ha-icon icon="mdi:bluetooth-connect"></ha-icon><span>${title}</span><span class="count">${filteredSensors.length}${cfg.only_low?'/'+sensors.length:''}</span></div>
+        <div class="card-header"><ha-icon icon="mdi:bluetooth-connect"></ha-icon><span>${esc(title)}</span><span class="count">${filteredSensors.length}${cfg.only_low?'/'+sensors.length:''}</span></div>
         <div class="content">${rows||`<div class="empty">${t(hass,'sensors_none')}</div>`}</div>
       </ha-card>
       <style>
