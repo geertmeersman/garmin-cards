@@ -38,6 +38,7 @@ jobs:
           TAG=${{ steps.release_published.outputs.tag_name }}
           echo $TAG > VERSION
           sed -i "s/\"version\": \".*\"/\"version\": \"${TAG#v}\"/" package.json
+          sed -i "s/const VERSION = \".*\"/const VERSION = \"${TAG#v}\"/" garmin-cards.js
           echo "Updated to version: ${TAG#v}"
 
       - name: 📦 Upload release assets
