@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // Garmin Cards — combined bundle
-const VERSION = "0.0.5";
+const VERSION = "0.0.7";
 // Kaarten: activity, sleep, hrv, training, body, activity-summary
 // ═══════════════════════════════════════════════════════════════════════════════
 
