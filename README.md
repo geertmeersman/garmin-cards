@@ -1,6 +1,6 @@
 # Garmin Cards
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 [![maintainer](https://img.shields.io/badge/maintainer-Geert%20Meersman-green?style=for-the-badge&logo=github)](https://github.com/geertmeersman)
 [![buyme_coffee](https://img.shields.io/badge/Buy%20me%20an%20Omer-donate-yellow?style=for-the-badge&logo=buymeacoffee)](https://www.buymeacoffee.com/geertmeersman)
 
@@ -22,17 +22,13 @@ A collection of Lovelace cards for [Home Assistant](https://www.home-assistant.i
 
 - [Garmin Connect integration](https://github.com/cyberjunky/home-assistant-garmin_connect) installed
 
-## Installation via HACS
+## Installation
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=geertmeersman&repository=garmin-cards&category=lovelace)
-
-Or add it manually:
+[![Open your Home Assistant instance and open this integration in the Home Assistant Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=geertmeersman&repository=garmin-cards&category=lovelace)
 
 1. Go to **Settings → Marketplace**
-2. Click **Add from link** (top right)
-3. Enter `https://github.com/geertmeersman/garmin-cards`
-4. Select **Dashboard** as content type if not detected automatically
-5. Click **Add** and install
+2. Search for **Garmin Cards**
+3. Click **Download**
 
 ## Configuration
 
